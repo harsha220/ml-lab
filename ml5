@@ -1,0 +1,1764 @@
+ 
+import numpy as np
+from urllib.request import urlopen
+import urllib
+import matplotlib.pyplot as plt # Visuals
+import seaborn as sns
+import sklearn as skl
+import pandas as pd
+import sys
+Cleveland_data_URL = 'http://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/processed.hungarian.data'
+#Hungarian_data_URL = 'http://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/processed.hungarian.data'
+#Switzerland_data_URL = 'http://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/processed.switzerland.data'
+np.set_printoptions(threshold=sys.maxsize) #see a whole array when we output it
+names = ['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach','exang', 'oldpeak', 'slope', 'ca', 'thal', 'heartdisease']
+heartDisease = pd.read_csv(urlopen(Cleveland_data_URL), names = names) #gets Cleveland data
+#HungarianHeartDisease = pd.read_csv(urlopen(Hungarian_data_URL), names = names) #gets Hungary data
+#SwitzerlandHeartDisease = pd.read_csv(urlopen(Switzerland_data_URL), names = names) #gets Switzerland data
+#datatemp = [ClevelandHeartDisease, HungarianHeartDisease,SwitzerlandHeartDisease] #combines all arrays into a list
+#heartDisease = pd.concat(datatemp)#combines list into one array
+heartDisease.head()
+del heartDisease['ca']
+del heartDisease['slope']
+del heartDisease['thal']
+del heartDisease['oldpeak']
+heartDisease = heartDisease.replace('?', np.nan)
+heartDisease.dtypes
+heartDisease.columns
+from pgmpy.models import BayesianModel
+from pgmpy.estimators import MaximumLikelihoodEstimator, BayesianEstimator
+model = BayesianModel([('age', 'trestbps'), ('age', 'fbs'), ('sex','trestbps'), ('sex', 'trestbps'),('exang','trestbps'),('trestbps','heartdisease'),('fbs','heartdisease'),('heartdisease','restecg'),('heartdisease','thalach'),('heartdisease','chol')])
+# Learing CPDs using Maximum Likelihood Estimators
+model.fit(heartDisease, estimator=MaximumLikelihoodEstimator)
+#for cpd in model.get_cpds():
+# print("CPD of {variable}:".format(variable=cpd.variable))
+# print(cpd)
+print(model.get_cpds('age'))
+print(model.get_cpds('chol'))
+print(model.get_cpds('sex'))
+model.get_independencies()
+
+
+output
++---------+------------+
+| age(28) | 0.00383142 |
++---------+------------+
+| age(29) | 0.00383142 |
++---------+------------+
+| age(30) | 0.00383142 |
++---------+------------+
+| age(31) | 0.00766284 |
++---------+------------+
+| age(32) | 0.0153257  |
++---------+------------+
+| age(33) | 0.00766284 |
++---------+------------+
+| age(34) | 0.0153257  |
++---------+------------+
+| age(35) | 0.0191571  |
++---------+------------+
+| age(36) | 0.0191571  |
++---------+------------+
+| age(37) | 0.0306513  |
++---------+------------+
+| age(38) | 0.0191571  |
++---------+------------+
+| age(39) | 0.0344828  |
++---------+------------+
+| age(40) | 0.0191571  |
++---------+------------+
+| age(41) | 0.0383142  |
++---------+------------+
+| age(42) | 0.0268199  |
++---------+------------+
+| age(43) | 0.0421456  |
++---------+------------+
+| age(44) | 0.0268199  |
++---------+------------+
+| age(45) | 0.0229885  |
++---------+------------+
+| age(46) | 0.045977   |
++---------+------------+
+| age(47) | 0.0344828  |
++---------+------------+
+| age(48) | 0.0613027  |
++---------+------------+
+| age(49) | 0.0421456  |
++---------+------------+
+| age(50) | 0.045977   |
++---------+------------+
+| age(51) | 0.0344828  |
++---------+------------+
+| age(52) | 0.0574713  |
++---------+------------+
+| age(53) | 0.0383142  |
++---------+------------+
+| age(54) | 0.0842912  |
++---------+------------+
+| age(55) | 0.0536398  |
++---------+------------+
+| age(56) | 0.0306513  |
++---------+------------+
+| age(57) | 0.0191571  |
++---------+------------+
+| age(58) | 0.0344828  |
++---------+------------+
+| age(59) | 0.0229885  |
++---------+------------+
+| age(60) | 0.00766284 |
++---------+------------+
+| age(61) | 0.00766284 |
++---------+------------+
+| age(62) | 0.00766284 |
++---------+------------+
+| age(63) | 0.00383142 |
++---------+------------+
+| age(65) | 0.0114943  |
++---------+------------+
+| age(66) | 0          |
++---------+------------+
++--------------+----------------------+----------------------+
+| heartdisease | heartdisease(0)      | heartdisease(1)      |
++--------------+----------------------+----------------------+
+| chol(100)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(117)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(129)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(132)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(147)    | 0.012269938650306749 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(156)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(160)    | 0.012269938650306749 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(161)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(163)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(164)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(166)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(167)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(168)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(171)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(172)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(173)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(175)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(179)    | 0.012269938650306749 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(180)    | 0.006134969325153374 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(182)    | 0.012269938650306749 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(184)    | 0.018404907975460124 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(186)    | 0.006134969325153374 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(187)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(188)    | 0.012269938650306749 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(190)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(193)    | 0.006134969325153374 | 0.02040816326530612  |
++--------------+----------------------+----------------------+
+| chol(194)    | 0.012269938650306749 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(195)    | 0.018404907975460124 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(196)    | 0.018404907975460124 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(198)    | 0.012269938650306749 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(200)    | 0.012269938650306749 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(201)    | 0.012269938650306749 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(202)    | 0.006134969325153374 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(204)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(205)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(206)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(207)    | 0.012269938650306749 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(208)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(209)    | 0.012269938650306749 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(210)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(211)    | 0.018404907975460124 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(212)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(213)    | 0.006134969325153374 | 0.02040816326530612  |
++--------------+----------------------+----------------------+
+| chol(214)    | 0.006134969325153374 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(215)    | 0.024539877300613498 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(216)    | 0.012269938650306749 | 0.02040816326530612  |
++--------------+----------------------+----------------------+
+| chol(217)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(218)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(219)    | 0.006134969325153374 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(220)    | 0.018404907975460124 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(221)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(222)    | 0.006134969325153374 | 0.02040816326530612  |
++--------------+----------------------+----------------------+
+| chol(223)    | 0.012269938650306749 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(224)    | 0.018404907975460124 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(225)    | 0.012269938650306749 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(226)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(227)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(228)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(229)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(230)    | 0.024539877300613498 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(231)    | 0.0                  | 0.02040816326530612  |
++--------------+----------------------+----------------------+
+| chol(233)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(234)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(237)    | 0.012269938650306749 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(238)    | 0.024539877300613498 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(240)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(241)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(242)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(243)    | 0.012269938650306749 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(245)    | 0.012269938650306749 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(246)    | 0.012269938650306749 | 0.030612244897959183 |
++--------------+----------------------+----------------------+
+| chol(247)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(248)    | 0.0                  | 0.030612244897959183 |
++--------------+----------------------+----------------------+
+| chol(249)    | 0.012269938650306749 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(250)    | 0.012269938650306749 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(251)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(253)    | 0.012269938650306749 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(254)    | 0.012269938650306749 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(255)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(256)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(257)    | 0.006134969325153374 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(259)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(260)    | 0.018404907975460124 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(263)    | 0.006134969325153374 | 0.030612244897959183 |
++--------------+----------------------+----------------------+
+| chol(264)    | 0.006134969325153374 | 0.02040816326530612  |
++--------------+----------------------+----------------------+
+| chol(265)    | 0.0                  | 0.02040816326530612  |
++--------------+----------------------+----------------------+
+| chol(266)    | 0.006134969325153374 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(267)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(268)    | 0.006134969325153374 | 0.02040816326530612  |
++--------------+----------------------+----------------------+
+| chol(269)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(270)    | 0.006134969325153374 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(271)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(272)    | 0.006134969325153374 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(273)    | 0.012269938650306749 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(274)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(275)    | 0.012269938650306749 | 0.02040816326530612  |
++--------------+----------------------+----------------------+
+| chol(276)    | 0.012269938650306749 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(277)    | 0.006134969325153374 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(279)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(280)    | 0.006134969325153374 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(281)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(282)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(283)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(284)    | 0.012269938650306749 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(285)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(287)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(288)    | 0.0                  | 0.030612244897959183 |
++--------------+----------------------+----------------------+
+| chol(289)    | 0.006134969325153374 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(290)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(291)    | 0.006134969325153374 | 0.02040816326530612  |
++--------------+----------------------+----------------------+
+| chol(292)    | 0.012269938650306749 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(294)    | 0.006134969325153374 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(295)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(297)    | 0.012269938650306749 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(298)    | 0.006134969325153374 | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(303)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(305)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(306)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(307)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(308)    | 0.012269938650306749 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(309)    | 0.0                  | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(312)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(315)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(318)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(320)    | 0.012269938650306749 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(326)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(328)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(329)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(331)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(336)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(338)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(339)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(340)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(341)    | 0.0                  | 0.02040816326530612  |
++--------------+----------------------+----------------------+
+| chol(342)    | 0.0                  | 0.02040816326530612  |
++--------------+----------------------+----------------------+
+| chol(344)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(347)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(355)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(358)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(365)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(388)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(392)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(393)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(394)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(404)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(412)    | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(466)    | 0.0                  | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(468)    | 0.0                  | 0.0                  |
++--------------+----------------------+----------------------+
+| chol(491)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(518)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(529)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(603)    | 0.0                  | 0.01020408163265306  |
++--------------+----------------------+----------------------+
+| chol(85)     | 0.006134969325153374 | 0.0                  |
++--------------+----------------------+----------------------+
++--------+----------+
+| sex(0) | 0.264368 |
++--------+----------+
+| sex(1) | 0.735632 |
++--------+----------+
+(age _|_ exang, sex)
+(age _|_ sex | exang)
+(age _|_ exang, sex | fbs)
+(age _|_ exang | sex)
+(age _|_ thalach, restecg, chol | heartdisease)
+(age _|_ thalach, restecg | heartdisease, chol)
+(age _|_ sex | exang, fbs)
+(age _|_ thalach, restecg, chol | heartdisease, exang)
+(age _|_ exang | fbs, sex)
+(age _|_ thalach, heartdisease, restecg, chol | trestbps, fbs)
+(age _|_ thalach, restecg, chol | heartdisease, fbs)
+(age _|_ thalach, restecg, chol | heartdisease, sex)
+(age _|_ thalach, restecg, chol | trestbps, heartdisease)
+(age _|_ thalach, chol | heartdisease, restecg)
+(age _|_ restecg, chol | thalach, heartdisease)
+(age _|_ thalach, restecg | heartdisease, exang, chol)
+(age _|_ thalach, heartdisease, restecg | trestbps, fbs, chol)
+(age _|_ thalach, restecg | heartdisease, fbs, chol)
+(age _|_ thalach, restecg | sex, heartdisease, chol)
+(age _|_ thalach, restecg | trestbps, heartdisease, chol)
+(age _|_ thalach | heartdisease, restecg, chol)
+(age _|_ restecg | thalach, heartdisease, chol)
+(age _|_ thalach, heartdisease, restecg, chol | trestbps, exang, fbs)
+(age _|_ thalach, restecg, chol | heartdisease, exang, fbs)
+(age _|_ thalach, restecg, chol | heartdisease, exang, sex)
+(age _|_ thalach, restecg, chol | trestbps, heartdisease, exang)
+(age _|_ thalach, chol | heartdisease, exang, restecg)
+(age _|_ restecg, chol | thalach, heartdisease, exang)
+(age _|_ thalach, heartdisease, restecg, chol | trestbps, fbs, sex)
+(age _|_ thalach, restecg, chol | heartdisease, fbs, sex)
+(age _|_ thalach, heartdisease, chol | trestbps, fbs, restecg)
+(age _|_ heartdisease, restecg, chol | trestbps, thalach, fbs)
+(age _|_ thalach, restecg, chol | trestbps, heartdisease, fbs)
+(age _|_ thalach, chol | heartdisease, fbs, restecg)
+(age _|_ restecg, chol | thalach, heartdisease, fbs)
+(age _|_ thalach, restecg, chol | trestbps, heartdisease, sex)
+(age _|_ thalach, chol | heartdisease, restecg, sex)
+(age _|_ restecg, chol | thalach, heartdisease, sex)
+(age _|_ thalach, chol | trestbps, heartdisease, restecg)
+(age _|_ restecg, chol | trestbps, heartdisease, thalach)
+(age _|_ chol | thalach, heartdisease, restecg)
+(age _|_ thalach, heartdisease, restecg | trestbps, exang, fbs, chol)
+(age _|_ thalach, restecg | heartdisease, exang, fbs, chol)
+(age _|_ thalach, restecg | sex, heartdisease, exang, chol)
+(age _|_ thalach, restecg | trestbps, heartdisease, exang, chol)
+(age _|_ thalach | heartdisease, exang, restecg, chol)
+(age _|_ restecg | thalach, heartdisease, exang, chol)
+(age _|_ thalach, heartdisease, restecg | trestbps, sex, fbs, chol)
+(age _|_ thalach, restecg | sex, heartdisease, fbs, chol)
+(age _|_ thalach, heartdisease | trestbps, fbs, restecg, chol)
+(age _|_ heartdisease, restecg | trestbps, thalach, fbs, chol)
+(age _|_ thalach, restecg | trestbps, heartdisease, fbs, chol)
+(age _|_ thalach | heartdisease, fbs, restecg, chol)
+(age _|_ restecg | thalach, heartdisease, fbs, chol)
+(age _|_ thalach, restecg | trestbps, sex, heartdisease, chol)
+(age _|_ thalach | sex, heartdisease, restecg, chol)
+(age _|_ restecg | thalach, sex, heartdisease, chol)
+(age _|_ thalach | trestbps, heartdisease, restecg, chol)
+(age _|_ restecg | trestbps, heartdisease, thalach, chol)
+(age _|_ thalach, heartdisease, restecg, chol | trestbps, exang, fbs, sex)
+(age _|_ thalach, restecg, chol | heartdisease, exang, fbs, sex)
+(age _|_ thalach, heartdisease, chol | trestbps, exang, fbs, restecg)
+(age _|_ heartdisease, restecg, chol | trestbps, exang, fbs, thalach)
+(age _|_ thalach, restecg, chol | trestbps, heartdisease, exang, fbs)
+(age _|_ thalach, chol | heartdisease, exang, fbs, restecg)
+(age _|_ restecg, chol | thalach, heartdisease, exang, fbs)
+(age _|_ thalach, restecg, chol | trestbps, heartdisease, exang, sex)
+(age _|_ thalach, chol | heartdisease, exang, restecg, sex)
+(age _|_ restecg, chol | thalach, heartdisease, exang, sex)
+(age _|_ thalach, chol | trestbps, heartdisease, exang, restecg)
+(age _|_ restecg, chol | trestbps, heartdisease, exang, thalach)
+(age _|_ chol | thalach, heartdisease, exang, restecg)
+(age _|_ thalach, heartdisease, chol | trestbps, fbs, restecg, sex)
+(age _|_ heartdisease, restecg, chol | trestbps, thalach, fbs, sex)
+(age _|_ thalach, restecg, chol | trestbps, heartdisease, fbs, sex)
+(age _|_ thalach, chol | heartdisease, fbs, restecg, sex)
+(age _|_ restecg, chol | thalach, heartdisease, fbs, sex)
+(age _|_ heartdisease, chol | trestbps, thalach, fbs, restecg)
+(age _|_ thalach, chol | trestbps, heartdisease, fbs, restecg)
+(age _|_ restecg, chol | trestbps, heartdisease, thalach, fbs)
+(age _|_ chol | thalach, heartdisease, fbs, restecg)
+(age _|_ thalach, chol | trestbps, heartdisease, restecg, sex)
+(age _|_ restecg, chol | trestbps, heartdisease, thalach, sex)
+(age _|_ chol | thalach, heartdisease, restecg, sex)
+(age _|_ chol | trestbps, heartdisease, thalach, restecg)
+(age _|_ thalach, heartdisease, restecg | chol, exang, fbs, sex, trestbps)
+(age _|_ thalach, restecg | chol, exang, fbs, sex, heartdisease)
+(age _|_ thalach, heartdisease | chol, exang, fbs, trestbps, restecg)
+(age _|_ heartdisease, restecg | chol, exang, fbs, trestbps, thalach)
+(age _|_ thalach, restecg | chol, exang, fbs, trestbps, heartdisease)
+(age _|_ thalach | chol, exang, fbs, restecg, heartdisease)
+(age _|_ restecg | chol, exang, fbs, thalach, heartdisease)
+(age _|_ thalach, restecg | chol, exang, sex, trestbps, heartdisease)
+(age _|_ thalach | chol, exang, sex, restecg, heartdisease)
+(age _|_ restecg | chol, exang, sex, thalach, heartdisease)
+(age _|_ thalach | chol, exang, trestbps, restecg, heartdisease)
+(age _|_ restecg | chol, exang, trestbps, thalach, heartdisease)
+(age _|_ thalach, heartdisease | chol, fbs, sex, trestbps, restecg)
+(age _|_ heartdisease, restecg | chol, fbs, sex, trestbps, thalach)
+(age _|_ thalach, restecg | chol, fbs, sex, trestbps, heartdisease)
+(age _|_ thalach | chol, fbs, sex, restecg, heartdisease)
+(age _|_ restecg | chol, fbs, sex, thalach, heartdisease)
+(age _|_ heartdisease | chol, fbs, trestbps, restecg, thalach)
+(age _|_ thalach | chol, fbs, trestbps, restecg, heartdisease)
+(age _|_ restecg | chol, fbs, trestbps, thalach, heartdisease)
+(age _|_ thalach | chol, sex, trestbps, restecg, heartdisease)
+(age _|_ restecg | chol, sex, trestbps, thalach, heartdisease)
+(age _|_ thalach, heartdisease, chol | exang, fbs, sex, trestbps, restecg)
+(age _|_ heartdisease, restecg, chol | exang, fbs, sex, trestbps, thalach)
+(age _|_ thalach, restecg, chol | exang, fbs, sex, trestbps, heartdisease)
+(age _|_ thalach, chol | exang, fbs, sex, restecg, heartdisease)
+(age _|_ restecg, chol | exang, fbs, sex, thalach, heartdisease)
+(age _|_ heartdisease, chol | exang, fbs, trestbps, restecg, thalach)
+(age _|_ thalach, chol | exang, fbs, trestbps, restecg, heartdisease)
+(age _|_ restecg, chol | exang, fbs, trestbps, thalach, heartdisease)
+(age _|_ chol | exang, fbs, restecg, thalach, heartdisease)
+(age _|_ thalach, chol | exang, sex, trestbps, restecg, heartdisease)
+(age _|_ restecg, chol | exang, sex, trestbps, thalach, heartdisease)
+(age _|_ chol | exang, sex, restecg, thalach, heartdisease)
+(age _|_ chol | exang, trestbps, restecg, thalach, heartdisease)
+(age _|_ heartdisease, chol | fbs, sex, trestbps, restecg, thalach)
+(age _|_ thalach, chol | fbs, sex, trestbps, restecg, heartdisease)
+(age _|_ restecg, chol | fbs, sex, trestbps, thalach, heartdisease)
+(age _|_ chol | fbs, sex, restecg, thalach, heartdisease)
+(age _|_ chol | fbs, trestbps, restecg, thalach, heartdisease)
+(age _|_ chol | sex, trestbps, restecg, thalach, heartdisease)
+(age _|_ thalach, heartdisease | chol, exang, fbs, sex, trestbps, restecg)
+(age _|_ heartdisease, restecg | chol, exang, fbs, sex, trestbps, thalach)
+(age _|_ thalach, restecg | chol, exang, fbs, sex, trestbps, heartdisease)
+(age _|_ thalach | chol, exang, fbs, sex, restecg, heartdisease)
+(age _|_ restecg | chol, exang, fbs, sex, thalach, heartdisease)
+(age _|_ heartdisease | chol, exang, fbs, trestbps, restecg, thalach)
+(age _|_ thalach | chol, exang, fbs, trestbps, restecg, heartdisease)
+(age _|_ restecg | chol, exang, fbs, trestbps, thalach, heartdisease)
+(age _|_ thalach | chol, exang, sex, trestbps, restecg, heartdisease)
+(age _|_ restecg | chol, exang, sex, trestbps, thalach, heartdisease)
+(age _|_ heartdisease | chol, fbs, sex, trestbps, restecg, thalach)
+(age _|_ thalach | chol, fbs, sex, trestbps, restecg, heartdisease)
+(age _|_ restecg | chol, fbs, sex, trestbps, thalach, heartdisease)
+(age _|_ heartdisease, chol | exang, fbs, sex, trestbps, restecg, thalach)
+(age _|_ thalach, chol | exang, fbs, sex, trestbps, restecg, heartdisease)
+(age _|_ restecg, chol | exang, fbs, sex, trestbps, thalach, heartdisease)
+(age _|_ chol | exang, fbs, sex, restecg, thalach, heartdisease)
+(age _|_ chol | exang, fbs, trestbps, restecg, thalach, heartdisease)
+(age _|_ chol | exang, sex, trestbps, restecg, thalach, heartdisease)
+(age _|_ chol | fbs, sex, trestbps, restecg, thalach, heartdisease)
+(age _|_ heartdisease | chol, exang, fbs, sex, trestbps, restecg, thalach)
+(age _|_ thalach | chol, exang, fbs, sex, trestbps, restecg, heartdisease)
+(age _|_ restecg | chol, exang, fbs, sex, trestbps, thalach, heartdisease)
+(age _|_ chol | exang, fbs, sex, trestbps, restecg, thalach, heartdisease)
+(trestbps _|_ fbs | age)
+(trestbps _|_ thalach, restecg, chol | heartdisease)
+(trestbps _|_ thalach, restecg | heartdisease, chol)
+(trestbps _|_ fbs | age, exang)
+(trestbps _|_ thalach, restecg, chol | heartdisease, exang)
+(trestbps _|_ thalach, restecg, chol | heartdisease, fbs)
+(trestbps _|_ fbs | age, sex)
+(trestbps _|_ thalach, restecg, chol | heartdisease, sex)
+(trestbps _|_ thalach, restecg, chol | age, heartdisease)
+(trestbps _|_ thalach, chol | heartdisease, restecg)
+(trestbps _|_ restecg, chol | thalach, heartdisease)
+(trestbps _|_ thalach, restecg | heartdisease, exang, chol)
+(trestbps _|_ thalach, restecg | heartdisease, fbs, chol)
+(trestbps _|_ thalach, restecg | sex, heartdisease, chol)
+(trestbps _|_ thalach, restecg | age, heartdisease, chol)
+(trestbps _|_ thalach | heartdisease, restecg, chol)
+(trestbps _|_ restecg | thalach, heartdisease, chol)
+(trestbps _|_ thalach, restecg, chol | heartdisease, exang, fbs)
+(trestbps _|_ fbs | age, exang, sex)
+(trestbps _|_ thalach, restecg, chol | heartdisease, exang, sex)
+(trestbps _|_ thalach, restecg, chol | age, heartdisease, exang)
+(trestbps _|_ thalach, chol | heartdisease, exang, restecg)
+(trestbps _|_ restecg, chol | thalach, heartdisease, exang)
+(trestbps _|_ thalach, restecg, chol | heartdisease, fbs, sex)
+(trestbps _|_ thalach, restecg, chol | age, heartdisease, fbs)
+(trestbps _|_ thalach, chol | heartdisease, fbs, restecg)
+(trestbps _|_ restecg, chol | thalach, heartdisease, fbs)
+(trestbps _|_ thalach, restecg, chol | age, heartdisease, sex)
+(trestbps _|_ thalach, chol | heartdisease, restecg, sex)
+(trestbps _|_ restecg, chol | thalach, heartdisease, sex)
+(trestbps _|_ thalach, chol | age, heartdisease, restecg)
+(trestbps _|_ restecg, chol | thalach, age, heartdisease)
+(trestbps _|_ chol | thalach, heartdisease, restecg)
+(trestbps _|_ thalach, restecg | heartdisease, exang, fbs, chol)
+(trestbps _|_ thalach, restecg | sex, heartdisease, exang, chol)
+(trestbps _|_ thalach, restecg | age, heartdisease, exang, chol)
+(trestbps _|_ thalach | heartdisease, exang, restecg, chol)
+(trestbps _|_ restecg | thalach, heartdisease, exang, chol)
+(trestbps _|_ thalach, restecg | sex, heartdisease, fbs, chol)
+(trestbps _|_ thalach, restecg | age, heartdisease, fbs, chol)
+(trestbps _|_ thalach | heartdisease, fbs, restecg, chol)
+(trestbps _|_ restecg | thalach, heartdisease, fbs, chol)
+(trestbps _|_ thalach, restecg | sex, heartdisease, age, chol)
+(trestbps _|_ thalach | sex, heartdisease, restecg, chol)
+(trestbps _|_ restecg | thalach, sex, heartdisease, chol)
+(trestbps _|_ thalach | age, heartdisease, restecg, chol)
+(trestbps _|_ restecg | thalach, age, heartdisease, chol)
+(trestbps _|_ thalach, restecg, chol | heartdisease, exang, fbs, sex)
+(trestbps _|_ thalach, restecg, chol | age, heartdisease, exang, fbs)
+(trestbps _|_ thalach, chol | heartdisease, exang, fbs, restecg)
+(trestbps _|_ restecg, chol | thalach, heartdisease, exang, fbs)
+(trestbps _|_ thalach, restecg, chol | age, heartdisease, exang, sex)
+(trestbps _|_ thalach, chol | heartdisease, exang, restecg, sex)
+(trestbps _|_ restecg, chol | thalach, heartdisease, exang, sex)
+(trestbps _|_ thalach, chol | age, heartdisease, exang, restecg)
+(trestbps _|_ restecg, chol | thalach, age, heartdisease, exang)
+(trestbps _|_ chol | thalach, heartdisease, exang, restecg)
+(trestbps _|_ thalach, restecg, chol | age, heartdisease, fbs, sex)
+(trestbps _|_ thalach, chol | heartdisease, fbs, restecg, sex)
+(trestbps _|_ restecg, chol | thalach, heartdisease, fbs, sex)
+(trestbps _|_ thalach, chol | age, heartdisease, fbs, restecg)
+(trestbps _|_ restecg, chol | thalach, age, heartdisease, fbs)
+(trestbps _|_ chol | thalach, heartdisease, fbs, restecg)
+(trestbps _|_ thalach, chol | age, heartdisease, restecg, sex)
+(trestbps _|_ restecg, chol | thalach, age, heartdisease, sex)
+(trestbps _|_ chol | thalach, heartdisease, restecg, sex)
+(trestbps _|_ chol | thalach, age, heartdisease, restecg)
+(trestbps _|_ thalach, restecg | chol, exang, fbs, sex, heartdisease)
+(trestbps _|_ thalach, restecg | chol, exang, fbs, age, heartdisease)
+(trestbps _|_ thalach | chol, exang, fbs, restecg, heartdisease)
+(trestbps _|_ restecg | chol, exang, fbs, thalach, heartdisease)
+(trestbps _|_ thalach, restecg | chol, exang, sex, age, heartdisease)
+(trestbps _|_ thalach | chol, exang, sex, restecg, heartdisease)
+(trestbps _|_ restecg | chol, exang, sex, thalach, heartdisease)
+(trestbps _|_ thalach | chol, exang, age, restecg, heartdisease)
+(trestbps _|_ restecg | chol, exang, age, thalach, heartdisease)
+(trestbps _|_ thalach, restecg | chol, fbs, sex, age, heartdisease)
+(trestbps _|_ thalach | chol, fbs, sex, restecg, heartdisease)
+(trestbps _|_ restecg | chol, fbs, sex, thalach, heartdisease)
+(trestbps _|_ thalach | chol, fbs, age, restecg, heartdisease)
+(trestbps _|_ restecg | chol, fbs, age, thalach, heartdisease)
+(trestbps _|_ thalach | chol, sex, age, restecg, heartdisease)
+(trestbps _|_ restecg | chol, sex, age, thalach, heartdisease)
+(trestbps _|_ thalach, restecg, chol | exang, fbs, sex, age, heartdisease)
+(trestbps _|_ thalach, chol | exang, fbs, sex, restecg, heartdisease)
+(trestbps _|_ restecg, chol | exang, fbs, sex, thalach, heartdisease)
+(trestbps _|_ thalach, chol | exang, fbs, age, restecg, heartdisease)
+(trestbps _|_ restecg, chol | exang, fbs, age, thalach, heartdisease)
+(trestbps _|_ chol | exang, fbs, restecg, thalach, heartdisease)
+(trestbps _|_ thalach, chol | exang, sex, age, restecg, heartdisease)
+(trestbps _|_ restecg, chol | exang, sex, age, thalach, heartdisease)
+(trestbps _|_ chol | exang, sex, restecg, thalach, heartdisease)
+(trestbps _|_ chol | exang, age, restecg, thalach, heartdisease)
+(trestbps _|_ thalach, chol | fbs, sex, age, restecg, heartdisease)
+(trestbps _|_ restecg, chol | fbs, sex, age, thalach, heartdisease)
+(trestbps _|_ chol | fbs, sex, restecg, thalach, heartdisease)
+(trestbps _|_ chol | fbs, age, restecg, thalach, heartdisease)
+(trestbps _|_ chol | sex, age, restecg, thalach, heartdisease)
+(trestbps _|_ thalach, restecg | chol, exang, fbs, sex, age, heartdisease)
+(trestbps _|_ thalach | chol, exang, fbs, sex, restecg, heartdisease)
+(trestbps _|_ restecg | chol, exang, fbs, sex, thalach, heartdisease)
+(trestbps _|_ thalach | chol, exang, fbs, age, restecg, heartdisease)
+(trestbps _|_ restecg | chol, exang, fbs, age, thalach, heartdisease)
+(trestbps _|_ thalach | chol, exang, sex, age, restecg, heartdisease)
+(trestbps _|_ restecg | chol, exang, sex, age, thalach, heartdisease)
+(trestbps _|_ thalach | chol, fbs, sex, age, restecg, heartdisease)
+(trestbps _|_ restecg | chol, fbs, sex, age, thalach, heartdisease)
+(trestbps _|_ thalach, chol | exang, fbs, sex, age, restecg, heartdisease)
+(trestbps _|_ restecg, chol | exang, fbs, sex, age, thalach, heartdisease)
+(trestbps _|_ chol | exang, fbs, sex, restecg, thalach, heartdisease)
+(trestbps _|_ chol | exang, fbs, age, restecg, thalach, heartdisease)
+(trestbps _|_ chol | exang, sex, age, restecg, thalach, heartdisease)
+(trestbps _|_ chol | fbs, sex, age, restecg, thalach, heartdisease)
+(trestbps _|_ thalach | chol, exang, fbs, sex, age, restecg, heartdisease)
+(trestbps _|_ restecg | chol, exang, fbs, sex, age, thalach, heartdisease)
+(trestbps _|_ chol | exang, fbs, sex, age, restecg, thalach, heartdisease)
+(fbs _|_ exang, sex)
+(fbs _|_ sex | exang)
+(fbs _|_ exang | sex)
+(fbs _|_ trestbps, exang, sex | age)
+(fbs _|_ thalach, restecg, chol | heartdisease)
+(fbs _|_ thalach, restecg | heartdisease, chol)
+(fbs _|_ trestbps, sex | age, exang)
+(fbs _|_ thalach, restecg, chol | heartdisease, exang)
+(fbs _|_ trestbps, exang | age, sex)
+(fbs _|_ thalach, restecg, chol | heartdisease, sex)
+(fbs _|_ exang, sex | trestbps, age)
+(fbs _|_ thalach, restecg, chol | trestbps, heartdisease)
+(fbs _|_ thalach, restecg, chol | age, heartdisease)
+(fbs _|_ thalach, chol | heartdisease, restecg)
+(fbs _|_ restecg, chol | thalach, heartdisease)
+(fbs _|_ thalach, restecg | heartdisease, exang, chol)
+(fbs _|_ thalach, restecg | sex, heartdisease, chol)
+(fbs _|_ exang, sex | trestbps, age, chol)
+(fbs _|_ thalach, restecg | trestbps, heartdisease, chol)
+(fbs _|_ thalach, restecg | age, heartdisease, chol)
+(fbs _|_ thalach | heartdisease, restecg, chol)
+(fbs _|_ restecg | thalach, heartdisease, chol)
+(fbs _|_ trestbps | age, exang, sex)
+(fbs _|_ thalach, restecg, chol | heartdisease, exang, sex)
+(fbs _|_ sex | trestbps, age, exang)
+(fbs _|_ thalach, restecg, chol | trestbps, heartdisease, exang)
+(fbs _|_ thalach, restecg, chol | age, heartdisease, exang)
+(fbs _|_ thalach, chol | heartdisease, exang, restecg)
+(fbs _|_ restecg, chol | thalach, heartdisease, exang)
+(fbs _|_ exang | trestbps, age, sex)
+(fbs _|_ thalach, restecg, chol | trestbps, heartdisease, sex)
+(fbs _|_ thalach, restecg, chol | age, heartdisease, sex)
+(fbs _|_ thalach, chol | heartdisease, restecg, sex)
+(fbs _|_ restecg, chol | thalach, heartdisease, sex)
+(fbs _|_ exang, sex | trestbps, age, restecg)
+(fbs _|_ exang, sex | trestbps, age, thalach)
+(fbs _|_ restecg, chol, thalach, exang, sex | trestbps, age, heartdisease)
+(fbs _|_ thalach, chol | trestbps, heartdisease, restecg)
+(fbs _|_ restecg, chol | trestbps, heartdisease, thalach)
+(fbs _|_ thalach, chol | age, heartdisease, restecg)
+(fbs _|_ restecg, chol | thalach, age, heartdisease)
+(fbs _|_ chol | thalach, heartdisease, restecg)
+(fbs _|_ thalach, restecg | sex, heartdisease, exang, chol)
+(fbs _|_ sex | trestbps, age, exang, chol)
+(fbs _|_ thalach, restecg | trestbps, heartdisease, exang, chol)
+(fbs _|_ thalach, restecg | age, heartdisease, exang, chol)
+(fbs _|_ thalach | heartdisease, exang, restecg, chol)
+(fbs _|_ restecg | thalach, heartdisease, exang, chol)
+(fbs _|_ exang | trestbps, sex, age, chol)
+(fbs _|_ thalach, restecg | trestbps, sex, heartdisease, chol)
+(fbs _|_ thalach, restecg | sex, heartdisease, age, chol)
+(fbs _|_ thalach | sex, heartdisease, restecg, chol)
+(fbs _|_ restecg | thalach, sex, heartdisease, chol)
+(fbs _|_ exang, sex | trestbps, age, restecg, chol)
+(fbs _|_ exang, sex | trestbps, age, thalach, chol)
+(fbs _|_ thalach, exang, restecg, sex | trestbps, age, heartdisease, chol)
+(fbs _|_ thalach | trestbps, heartdisease, restecg, chol)
+(fbs _|_ restecg | trestbps, heartdisease, thalach, chol)
+(fbs _|_ thalach | age, heartdisease, restecg, chol)
+(fbs _|_ restecg | thalach, age, heartdisease, chol)
+(fbs _|_ thalach, restecg, chol | trestbps, heartdisease, exang, sex)
+(fbs _|_ thalach, restecg, chol | age, heartdisease, exang, sex)
+(fbs _|_ thalach, chol | heartdisease, exang, restecg, sex)
+(fbs _|_ restecg, chol | thalach, heartdisease, exang, sex)
+(fbs _|_ sex | trestbps, age, exang, restecg)
+(fbs _|_ sex | trestbps, age, exang, thalach)
+(fbs _|_ thalach, chol, restecg, sex | trestbps, age, heartdisease, exang)
+(fbs _|_ thalach, chol | trestbps, heartdisease, exang, restecg)
+(fbs _|_ restecg, chol | trestbps, heartdisease, exang, thalach)
+(fbs _|_ thalach, chol | age, heartdisease, exang, restecg)
+(fbs _|_ restecg, chol | thalach, age, heartdisease, exang)
+(fbs _|_ chol | thalach, heartdisease, exang, restecg)
+(fbs _|_ exang | trestbps, age, restecg, sex)
+(fbs _|_ exang | trestbps, age, thalach, sex)
+(fbs _|_ thalach, exang, restecg, chol | trestbps, age, heartdisease, sex)
+(fbs _|_ thalach, chol | trestbps, heartdisease, restecg, sex)
+(fbs _|_ restecg, chol | trestbps, heartdisease, thalach, sex)
+(fbs _|_ thalach, chol | age, heartdisease, restecg, sex)
+(fbs _|_ restecg, chol | thalach, age, heartdisease, sex)
+(fbs _|_ chol | thalach, heartdisease, restecg, sex)
+(fbs _|_ exang, sex | trestbps, age, thalach, restecg)
+(fbs _|_ thalach, exang, chol, sex | trestbps, age, heartdisease, restecg)
+(fbs _|_ exang, chol, restecg, sex | trestbps, age, heartdisease, thalach)
+(fbs _|_ chol | trestbps, heartdisease, thalach, restecg)
+(fbs _|_ chol | thalach, age, heartdisease, restecg)
+(fbs _|_ thalach, restecg | chol, exang, sex, trestbps, heartdisease)
+(fbs _|_ thalach, restecg | chol, exang, sex, age, heartdisease)
+(fbs _|_ thalach | chol, exang, sex, restecg, heartdisease)
+(fbs _|_ restecg | chol, exang, sex, thalach, heartdisease)
+(fbs _|_ sex | chol, exang, trestbps, age, restecg)
+(fbs _|_ sex | chol, exang, trestbps, age, thalach)
+(fbs _|_ thalach, restecg, sex | chol, exang, trestbps, age, heartdisease)
+(fbs _|_ thalach | chol, exang, trestbps, restecg, heartdisease)
+(fbs _|_ restecg | chol, exang, trestbps, thalach, heartdisease)
+(fbs _|_ thalach | chol, exang, age, restecg, heartdisease)
+(fbs _|_ restecg | chol, exang, age, thalach, heartdisease)
+(fbs _|_ exang | chol, sex, trestbps, age, restecg)
+(fbs _|_ exang | chol, sex, trestbps, age, thalach)
+(fbs _|_ thalach, exang, restecg | chol, sex, trestbps, age, heartdisease)
+(fbs _|_ thalach | chol, sex, trestbps, restecg, heartdisease)
+(fbs _|_ restecg | chol, sex, trestbps, thalach, heartdisease)
+(fbs _|_ thalach | chol, sex, age, restecg, heartdisease)
+(fbs _|_ restecg | chol, sex, age, thalach, heartdisease)
+(fbs _|_ exang, sex | chol, trestbps, age, restecg, thalach)
+(fbs _|_ thalach, exang, sex | chol, trestbps, age, restecg, heartdisease)
+(fbs _|_ exang, restecg, sex | chol, trestbps, age, thalach, heartdisease)
+(fbs _|_ thalach, restecg, chol | exang, sex, trestbps, age, heartdisease)
+(fbs _|_ thalach, chol | exang, sex, trestbps, restecg, heartdisease)
+(fbs _|_ restecg, chol | exang, sex, trestbps, thalach, heartdisease)
+(fbs _|_ thalach, chol | exang, sex, age, restecg, heartdisease)
+(fbs _|_ restecg, chol | exang, sex, age, thalach, heartdisease)
+(fbs _|_ chol | exang, sex, restecg, thalach, heartdisease)
+(fbs _|_ sex | exang, trestbps, age, restecg, thalach)
+(fbs _|_ thalach, chol, sex | exang, trestbps, age, restecg, heartdisease)
+(fbs _|_ chol, restecg, sex | exang, trestbps, age, thalach, heartdisease)
+(fbs _|_ chol | exang, trestbps, restecg, thalach, heartdisease)
+(fbs _|_ chol | exang, age, restecg, thalach, heartdisease)
+(fbs _|_ exang | sex, trestbps, age, restecg, thalach)
+(fbs _|_ thalach, exang, chol | sex, trestbps, age, restecg, heartdisease)
+(fbs _|_ exang, restecg, chol | sex, trestbps, age, thalach, heartdisease)
+(fbs _|_ chol | sex, trestbps, restecg, thalach, heartdisease)
+(fbs _|_ chol | sex, age, restecg, thalach, heartdisease)
+(fbs _|_ exang, chol, sex | trestbps, age, restecg, thalach, heartdisease)
+(fbs _|_ thalach, restecg | chol, exang, sex, trestbps, age, heartdisease)
+(fbs _|_ thalach | chol, exang, sex, trestbps, restecg, heartdisease)
+(fbs _|_ restecg | chol, exang, sex, trestbps, thalach, heartdisease)
+(fbs _|_ thalach | chol, exang, sex, age, restecg, heartdisease)
+(fbs _|_ restecg | chol, exang, sex, age, thalach, heartdisease)
+(fbs _|_ sex | chol, exang, trestbps, age, restecg, thalach)
+(fbs _|_ thalach, sex | chol, exang, trestbps, age, restecg, heartdisease)
+(fbs _|_ restecg, sex | chol, exang, trestbps, age, thalach, heartdisease)
+(fbs _|_ exang | chol, sex, trestbps, age, restecg, thalach)
+(fbs _|_ thalach, exang | chol, sex, trestbps, age, restecg, heartdisease)
+(fbs _|_ exang, restecg | chol, sex, trestbps, age, thalach, heartdisease)
+(fbs _|_ exang, sex | chol, trestbps, age, restecg, thalach, heartdisease)
+(fbs _|_ thalach, chol | exang, sex, trestbps, age, restecg, heartdisease)
+(fbs _|_ restecg, chol | exang, sex, trestbps, age, thalach, heartdisease)
+(fbs _|_ chol | exang, sex, trestbps, restecg, thalach, heartdisease)
+(fbs _|_ chol | exang, sex, age, restecg, thalach, heartdisease)
+(fbs _|_ chol, sex | exang, trestbps, age, restecg, thalach, heartdisease)
+(fbs _|_ exang, chol | sex, trestbps, age, restecg, thalach, heartdisease)
+(fbs _|_ thalach | chol, exang, sex, trestbps, age, restecg, heartdisease)
+(fbs _|_ restecg | chol, exang, sex, trestbps, age, thalach, heartdisease)
+(fbs _|_ sex | chol, exang, trestbps, age, restecg, thalach, heartdisease)
+(fbs _|_ exang | chol, sex, trestbps, age, restecg, thalach, heartdisease)
+(fbs _|_ chol | exang, sex, trestbps, age, restecg, thalach, heartdisease)
+(sex _|_ age, exang, fbs)
+(sex _|_ age, fbs | exang)
+(sex _|_ age, exang | fbs)
+(sex _|_ exang, fbs | age)
+(sex _|_ thalach, restecg, chol | heartdisease)
+(sex _|_ thalach, restecg | heartdisease, chol)
+(sex _|_ age | exang, fbs)
+(sex _|_ fbs | age, exang)
+(sex _|_ thalach, restecg, chol | heartdisease, exang)
+(sex _|_ thalach, heartdisease, restecg, chol | trestbps, fbs)
+(sex _|_ exang | age, fbs)
+(sex _|_ thalach, restecg, chol | heartdisease, fbs)
+(sex _|_ restecg, chol, thalach, heartdisease, fbs | trestbps, age)
+(sex _|_ thalach, restecg, chol | trestbps, heartdisease)
+(sex _|_ thalach, restecg, chol | age, heartdisease)
+(sex _|_ thalach, chol | heartdisease, restecg)
+(sex _|_ restecg, chol | thalach, heartdisease)
+(sex _|_ thalach, restecg | heartdisease, exang, chol)
+(sex _|_ thalach, heartdisease, restecg | trestbps, fbs, chol)
+(sex _|_ thalach, restecg | heartdisease, fbs, chol)
+(sex _|_ thalach, heartdisease, fbs, restecg | trestbps, age, chol)
+(sex _|_ thalach, restecg | trestbps, heartdisease, chol)
+(sex _|_ thalach, restecg | age, heartdisease, chol)
+(sex _|_ thalach | heartdisease, restecg, chol)
+(sex _|_ restecg | thalach, heartdisease, chol)
+(sex _|_ thalach, heartdisease, restecg, chol | trestbps, exang, fbs)
+(sex _|_ thalach, restecg, chol | heartdisease, exang, fbs)
+(sex _|_ restecg, chol, thalach, heartdisease, fbs | trestbps, age, exang)
+(sex _|_ thalach, restecg, chol | trestbps, heartdisease, exang)
+(sex _|_ thalach, restecg, chol | age, heartdisease, exang)
+(sex _|_ thalach, chol | heartdisease, exang, restecg)
+(sex _|_ restecg, chol | thalach, heartdisease, exang)
+(sex _|_ thalach, heartdisease, restecg, chol | trestbps, age, fbs)
+(sex _|_ thalach, heartdisease, chol | trestbps, fbs, restecg)
+(sex _|_ heartdisease, restecg, chol | trestbps, thalach, fbs)
+(sex _|_ thalach, restecg, chol | trestbps, heartdisease, fbs)
+(sex _|_ thalach, restecg, chol | age, heartdisease, fbs)
+(sex _|_ thalach, chol | heartdisease, fbs, restecg)
+(sex _|_ restecg, chol | thalach, heartdisease, fbs)
+(sex _|_ thalach, heartdisease, fbs, chol | trestbps, age, restecg)
+(sex _|_ heartdisease, fbs, restecg, chol | trestbps, age, thalach)
+(sex _|_ thalach, fbs, restecg, chol | trestbps, age, heartdisease)
+(sex _|_ thalach, chol | trestbps, heartdisease, restecg)
+(sex _|_ restecg, chol | trestbps, heartdisease, thalach)
+(sex _|_ thalach, chol | age, heartdisease, restecg)
+(sex _|_ restecg, chol | thalach, age, heartdisease)
+(sex _|_ chol | thalach, heartdisease, restecg)
+(sex _|_ thalach, heartdisease, restecg | trestbps, exang, fbs, chol)
+(sex _|_ thalach, restecg | heartdisease, exang, fbs, chol)
+(sex _|_ thalach, heartdisease, fbs, restecg | trestbps, age, exang, chol)
+(sex _|_ thalach, restecg | trestbps, heartdisease, exang, chol)
+(sex _|_ thalach, restecg | age, heartdisease, exang, chol)
+(sex _|_ thalach | heartdisease, exang, restecg, chol)
+(sex _|_ restecg | thalach, heartdisease, exang, chol)
+(sex _|_ thalach, heartdisease, restecg | trestbps, age, fbs, chol)
+(sex _|_ thalach, heartdisease | trestbps, fbs, restecg, chol)
+(sex _|_ heartdisease, restecg | trestbps, thalach, fbs, chol)
+(sex _|_ thalach, restecg | trestbps, heartdisease, fbs, chol)
+(sex _|_ thalach, restecg | age, heartdisease, fbs, chol)
+(sex _|_ thalach | heartdisease, fbs, restecg, chol)
+(sex _|_ restecg | thalach, heartdisease, fbs, chol)
+(sex _|_ thalach, heartdisease, fbs | trestbps, age, restecg, chol)
+(sex _|_ heartdisease, fbs, restecg | trestbps, age, thalach, chol)
+(sex _|_ thalach, fbs, restecg | trestbps, age, heartdisease, chol)
+(sex _|_ thalach | trestbps, heartdisease, restecg, chol)
+(sex _|_ restecg | trestbps, heartdisease, thalach, chol)
+(sex _|_ thalach | age, heartdisease, restecg, chol)
+(sex _|_ restecg | thalach, age, heartdisease, chol)
+(sex _|_ thalach, heartdisease, restecg, chol | trestbps, age, exang, fbs)
+(sex _|_ thalach, heartdisease, chol | trestbps, exang, fbs, restecg)
+(sex _|_ heartdisease, restecg, chol | trestbps, exang, fbs, thalach)
+(sex _|_ thalach, restecg, chol | trestbps, heartdisease, exang, fbs)
+(sex _|_ thalach, restecg, chol | age, heartdisease, exang, fbs)
+(sex _|_ thalach, chol | heartdisease, exang, fbs, restecg)
+(sex _|_ restecg, chol | thalach, heartdisease, exang, fbs)
+(sex _|_ thalach, heartdisease, fbs, chol | trestbps, age, exang, restecg)
+(sex _|_ heartdisease, fbs, restecg, chol | trestbps, age, exang, thalach)
+(sex _|_ thalach, fbs, restecg, chol | trestbps, age, heartdisease, exang)
+(sex _|_ thalach, chol | trestbps, heartdisease, exang, restecg)
+(sex _|_ restecg, chol | trestbps, heartdisease, exang, thalach)
+(sex _|_ thalach, chol | age, heartdisease, exang, restecg)
+(sex _|_ restecg, chol | thalach, age, heartdisease, exang)
+(sex _|_ chol | thalach, heartdisease, exang, restecg)
+(sex _|_ thalach, heartdisease, chol | trestbps, age, fbs, restecg)
+(sex _|_ heartdisease, restecg, chol | trestbps, age, thalach, fbs)
+(sex _|_ thalach, restecg, chol | trestbps, age, heartdisease, fbs)
+(sex _|_ heartdisease, chol | trestbps, thalach, fbs, restecg)
+(sex _|_ thalach, chol | trestbps, heartdisease, fbs, restecg)
+(sex _|_ restecg, chol | trestbps, heartdisease, thalach, fbs)
+(sex _|_ thalach, chol | age, heartdisease, fbs, restecg)
+(sex _|_ restecg, chol | thalach, age, heartdisease, fbs)
+(sex _|_ chol | thalach, heartdisease, fbs, restecg)
+(sex _|_ heartdisease, fbs, chol | trestbps, age, thalach, restecg)
+(sex _|_ thalach, fbs, chol | trestbps, age, heartdisease, restecg)
+(sex _|_ fbs, restecg, chol | trestbps, age, heartdisease, thalach)
+(sex _|_ chol | trestbps, heartdisease, thalach, restecg)
+(sex _|_ chol | thalach, age, heartdisease, restecg)
+(sex _|_ thalach, heartdisease, restecg | chol, exang, fbs, trestbps, age)
+(sex _|_ thalach, heartdisease | chol, exang, fbs, trestbps, restecg)
+(sex _|_ heartdisease, restecg | chol, exang, fbs, trestbps, thalach)
+(sex _|_ thalach, restecg | chol, exang, fbs, trestbps, heartdisease)
+(sex _|_ thalach, restecg | chol, exang, fbs, age, heartdisease)
+(sex _|_ thalach | chol, exang, fbs, restecg, heartdisease)
+(sex _|_ restecg | chol, exang, fbs, thalach, heartdisease)
+(sex _|_ thalach, heartdisease, fbs | chol, exang, trestbps, age, restecg)
+(sex _|_ heartdisease, fbs, restecg | chol, exang, trestbps, age, thalach)
+(sex _|_ thalach, fbs, restecg | chol, exang, trestbps, age, heartdisease)
+(sex _|_ thalach | chol, exang, trestbps, restecg, heartdisease)
+(sex _|_ restecg | chol, exang, trestbps, thalach, heartdisease)
+(sex _|_ thalach | chol, exang, age, restecg, heartdisease)
+(sex _|_ restecg | chol, exang, age, thalach, heartdisease)
+(sex _|_ thalach, heartdisease | chol, fbs, trestbps, age, restecg)
+(sex _|_ heartdisease, restecg | chol, fbs, trestbps, age, thalach)
+(sex _|_ thalach, restecg | chol, fbs, trestbps, age, heartdisease)
+(sex _|_ heartdisease | chol, fbs, trestbps, restecg, thalach)
+(sex _|_ thalach | chol, fbs, trestbps, restecg, heartdisease)
+(sex _|_ restecg | chol, fbs, trestbps, thalach, heartdisease)
+(sex _|_ thalach | chol, fbs, age, restecg, heartdisease)
+(sex _|_ restecg | chol, fbs, age, thalach, heartdisease)
+(sex _|_ heartdisease, fbs | chol, trestbps, age, restecg, thalach)
+(sex _|_ thalach, fbs | chol, trestbps, age, restecg, heartdisease)
+(sex _|_ fbs, restecg | chol, trestbps, age, thalach, heartdisease)
+(sex _|_ thalach, heartdisease, chol | exang, fbs, trestbps, age, restecg)
+(sex _|_ heartdisease, restecg, chol | exang, fbs, trestbps, age, thalach)
+(sex _|_ thalach, restecg, chol | exang, fbs, trestbps, age, heartdisease)
+(sex _|_ heartdisease, chol | exang, fbs, trestbps, restecg, thalach)
+(sex _|_ thalach, chol | exang, fbs, trestbps, restecg, heartdisease)
+(sex _|_ restecg, chol | exang, fbs, trestbps, thalach, heartdisease)
+(sex _|_ thalach, chol | exang, fbs, age, restecg, heartdisease)
+(sex _|_ restecg, chol | exang, fbs, age, thalach, heartdisease)
+(sex _|_ chol | exang, fbs, restecg, thalach, heartdisease)
+(sex _|_ heartdisease, fbs, chol | exang, trestbps, age, restecg, thalach)
+(sex _|_ thalach, fbs, chol | exang, trestbps, age, restecg, heartdisease)
+(sex _|_ fbs, restecg, chol | exang, trestbps, age, thalach, heartdisease)
+(sex _|_ chol | exang, trestbps, restecg, thalach, heartdisease)
+(sex _|_ chol | exang, age, restecg, thalach, heartdisease)
+(sex _|_ heartdisease, chol | fbs, trestbps, age, restecg, thalach)
+(sex _|_ thalach, chol | fbs, trestbps, age, restecg, heartdisease)
+(sex _|_ restecg, chol | fbs, trestbps, age, thalach, heartdisease)
+(sex _|_ chol | fbs, trestbps, restecg, thalach, heartdisease)
+(sex _|_ chol | fbs, age, restecg, thalach, heartdisease)
+(sex _|_ fbs, chol | trestbps, age, restecg, thalach, heartdisease)
+(sex _|_ thalach, heartdisease | chol, exang, fbs, trestbps, age, restecg)
+(sex _|_ heartdisease, restecg | chol, exang, fbs, trestbps, age, thalach)
+(sex _|_ thalach, restecg | chol, exang, fbs, trestbps, age, heartdisease)
+(sex _|_ heartdisease | chol, exang, fbs, trestbps, restecg, thalach)
+(sex _|_ thalach | chol, exang, fbs, trestbps, restecg, heartdisease)
+(sex _|_ restecg | chol, exang, fbs, trestbps, thalach, heartdisease)
+(sex _|_ thalach | chol, exang, fbs, age, restecg, heartdisease)
+(sex _|_ restecg | chol, exang, fbs, age, thalach, heartdisease)
+(sex _|_ heartdisease, fbs | chol, exang, trestbps, age, restecg, thalach)
+(sex _|_ thalach, fbs | chol, exang, trestbps, age, restecg, heartdisease)
+(sex _|_ fbs, restecg | chol, exang, trestbps, age, thalach, heartdisease)
+(sex _|_ heartdisease | chol, fbs, trestbps, age, restecg, thalach)
+(sex _|_ thalach | chol, fbs, trestbps, age, restecg, heartdisease)
+(sex _|_ restecg | chol, fbs, trestbps, age, thalach, heartdisease)
+(sex _|_ fbs | chol, trestbps, age, restecg, thalach, heartdisease)
+(sex _|_ heartdisease, chol | exang, fbs, trestbps, age, restecg, thalach)
+(sex _|_ thalach, chol | exang, fbs, trestbps, age, restecg, heartdisease)
+(sex _|_ restecg, chol | exang, fbs, trestbps, age, thalach, heartdisease)
+(sex _|_ chol | exang, fbs, trestbps, restecg, thalach, heartdisease)
+(sex _|_ chol | exang, fbs, age, restecg, thalach, heartdisease)
+(sex _|_ fbs, chol | exang, trestbps, age, restecg, thalach, heartdisease)
+(sex _|_ chol | fbs, trestbps, age, restecg, thalach, heartdisease)
+(sex _|_ heartdisease | chol, exang, fbs, trestbps, age, restecg, thalach)
+(sex _|_ thalach | chol, exang, fbs, trestbps, age, restecg, heartdisease)
+(sex _|_ restecg | chol, exang, fbs, trestbps, age, thalach, heartdisease)
+(sex _|_ fbs | chol, exang, trestbps, age, restecg, thalach, heartdisease)
+(sex _|_ chol | exang, fbs, trestbps, age, restecg, thalach, heartdisease)
+(exang _|_ age, fbs, sex)
+(exang _|_ age, sex | fbs)
+(exang _|_ age, fbs | sex)
+(exang _|_ fbs, sex | age)
+(exang _|_ thalach, restecg, chol | heartdisease)
+(exang _|_ thalach, restecg | heartdisease, chol)
+(exang _|_ age | fbs, sex)
+(exang _|_ thalach, heartdisease, restecg, chol | trestbps, fbs)
+(exang _|_ sex | age, fbs)
+(exang _|_ thalach, restecg, chol | heartdisease, fbs)
+(exang _|_ fbs | age, sex)
+(exang _|_ thalach, restecg, chol | heartdisease, sex)
+(exang _|_ restecg, chol, thalach, heartdisease, fbs | trestbps, age)
+(exang _|_ thalach, restecg, chol | trestbps, heartdisease)
+(exang _|_ thalach, restecg, chol | age, heartdisease)
+(exang _|_ thalach, chol | heartdisease, restecg)
+(exang _|_ restecg, chol | thalach, heartdisease)
+(exang _|_ thalach, heartdisease, restecg | trestbps, fbs, chol)
+(exang _|_ thalach, restecg | heartdisease, fbs, chol)
+(exang _|_ thalach, restecg | sex, heartdisease, chol)
+(exang _|_ thalach, heartdisease, fbs, restecg | trestbps, age, chol)
+(exang _|_ thalach, restecg | trestbps, heartdisease, chol)
+(exang _|_ thalach, restecg | age, heartdisease, chol)
+(exang _|_ thalach | heartdisease, restecg, chol)
+(exang _|_ restecg | thalach, heartdisease, chol)
+(exang _|_ thalach, heartdisease, restecg, chol | trestbps, fbs, sex)
+(exang _|_ thalach, restecg, chol | heartdisease, fbs, sex)
+(exang _|_ thalach, heartdisease, restecg, chol | trestbps, age, fbs)
+(exang _|_ thalach, heartdisease, chol | trestbps, fbs, restecg)
+(exang _|_ heartdisease, restecg, chol | trestbps, thalach, fbs)
+(exang _|_ thalach, restecg, chol | trestbps, heartdisease, fbs)
+(exang _|_ thalach, restecg, chol | age, heartdisease, fbs)
+(exang _|_ thalach, chol | heartdisease, fbs, restecg)
+(exang _|_ restecg, chol | thalach, heartdisease, fbs)
+(exang _|_ restecg, chol, thalach, heartdisease, fbs | trestbps, age, sex)
+(exang _|_ thalach, restecg, chol | trestbps, heartdisease, sex)
+(exang _|_ thalach, restecg, chol | age, heartdisease, sex)
+(exang _|_ thalach, chol | heartdisease, restecg, sex)
+(exang _|_ restecg, chol | thalach, heartdisease, sex)
+(exang _|_ thalach, heartdisease, fbs, chol | trestbps, age, restecg)
+(exang _|_ heartdisease, fbs, restecg, chol | trestbps, age, thalach)
+(exang _|_ thalach, fbs, restecg, chol | trestbps, age, heartdisease)
+(exang _|_ thalach, chol | trestbps, heartdisease, restecg)
+(exang _|_ restecg, chol | trestbps, heartdisease, thalach)
+(exang _|_ thalach, chol | age, heartdisease, restecg)
+(exang _|_ restecg, chol | thalach, age, heartdisease)
+(exang _|_ chol | thalach, heartdisease, restecg)
+(exang _|_ thalach, heartdisease, restecg | trestbps, sex, fbs, chol)
+(exang _|_ thalach, restecg | sex, heartdisease, fbs, chol)
+(exang _|_ thalach, heartdisease, restecg | trestbps, age, fbs, chol)
+(exang _|_ thalach, heartdisease | trestbps, fbs, restecg, chol)
+(exang _|_ heartdisease, restecg | trestbps, thalach, fbs, chol)
+(exang _|_ thalach, restecg | trestbps, heartdisease, fbs, chol)
+(exang _|_ thalach, restecg | age, heartdisease, fbs, chol)
+(exang _|_ thalach | heartdisease, fbs, restecg, chol)
+(exang _|_ restecg | thalach, heartdisease, fbs, chol)
+(exang _|_ thalach, heartdisease, fbs, restecg | trestbps, sex, age, chol)
+(exang _|_ thalach, restecg | trestbps, sex, heartdisease, chol)
+(exang _|_ thalach, restecg | sex, heartdisease, age, chol)
+(exang _|_ thalach | sex, heartdisease, restecg, chol)
+(exang _|_ restecg | thalach, sex, heartdisease, chol)
+(exang _|_ thalach, heartdisease, fbs | trestbps, age, restecg, chol)
+(exang _|_ heartdisease, fbs, restecg | trestbps, age, thalach, chol)
+(exang _|_ thalach, fbs, restecg | trestbps, age, heartdisease, chol)
+(exang _|_ thalach | trestbps, heartdisease, restecg, chol)
+(exang _|_ restecg | trestbps, heartdisease, thalach, chol)
+(exang _|_ thalach | age, heartdisease, restecg, chol)
+(exang _|_ restecg | thalach, age, heartdisease, chol)
+(exang _|_ thalach, heartdisease, restecg, chol | trestbps, age, fbs, sex)
+(exang _|_ thalach, heartdisease, chol | trestbps, fbs, restecg, sex)
+(exang _|_ heartdisease, restecg, chol | trestbps, thalach, fbs, sex)
+(exang _|_ thalach, restecg, chol | trestbps, heartdisease, fbs, sex)
+(exang _|_ thalach, restecg, chol | age, heartdisease, fbs, sex)
+(exang _|_ thalach, chol | heartdisease, fbs, restecg, sex)
+(exang _|_ restecg, chol | thalach, heartdisease, fbs, sex)
+(exang _|_ thalach, heartdisease, chol | trestbps, age, fbs, restecg)
+(exang _|_ heartdisease, restecg, chol | trestbps, age, thalach, fbs)
+(exang _|_ thalach, restecg, chol | trestbps, age, heartdisease, fbs)
+(exang _|_ heartdisease, chol | trestbps, thalach, fbs, restecg)
+(exang _|_ thalach, chol | trestbps, heartdisease, fbs, restecg)
+(exang _|_ restecg, chol | trestbps, heartdisease, thalach, fbs)
+(exang _|_ thalach, chol | age, heartdisease, fbs, restecg)
+(exang _|_ restecg, chol | thalach, age, heartdisease, fbs)
+(exang _|_ chol | thalach, heartdisease, fbs, restecg)
+(exang _|_ thalach, heartdisease, fbs, chol | trestbps, age, restecg, sex)
+(exang _|_ heartdisease, fbs, restecg, chol | trestbps, age, thalach, sex)
+(exang _|_ thalach, fbs, restecg, chol | trestbps, age, heartdisease, sex)
+(exang _|_ thalach, chol | trestbps, heartdisease, restecg, sex)
+(exang _|_ restecg, chol | trestbps, heartdisease, thalach, sex)
+(exang _|_ thalach, chol | age, heartdisease, restecg, sex)
+(exang _|_ restecg, chol | thalach, age, heartdisease, sex)
+(exang _|_ chol | thalach, heartdisease, restecg, sex)
+(exang _|_ heartdisease, fbs, chol | trestbps, age, thalach, restecg)
+(exang _|_ thalach, fbs, chol | trestbps, age, heartdisease, restecg)
+(exang _|_ fbs, restecg, chol | trestbps, age, heartdisease, thalach)
+(exang _|_ chol | trestbps, heartdisease, thalach, restecg)
+(exang _|_ chol | thalach, age, heartdisease, restecg)
+(exang _|_ thalach, heartdisease, restecg | chol, fbs, sex, trestbps, age)
+(exang _|_ thalach, heartdisease | chol, fbs, sex, trestbps, restecg)
+(exang _|_ heartdisease, restecg | chol, fbs, sex, trestbps, thalach)
+(exang _|_ thalach, restecg | chol, fbs, sex, trestbps, heartdisease)
+(exang _|_ thalach, restecg | chol, fbs, sex, age, heartdisease)
+(exang _|_ thalach | chol, fbs, sex, restecg, heartdisease)
+(exang _|_ restecg | chol, fbs, sex, thalach, heartdisease)
+(exang _|_ thalach, heartdisease | chol, fbs, trestbps, age, restecg)
+(exang _|_ heartdisease, restecg | chol, fbs, trestbps, age, thalach)
+(exang _|_ thalach, restecg | chol, fbs, trestbps, age, heartdisease)
+(exang _|_ heartdisease | chol, fbs, trestbps, restecg, thalach)
+(exang _|_ thalach | chol, fbs, trestbps, restecg, heartdisease)
+(exang _|_ restecg | chol, fbs, trestbps, thalach, heartdisease)
+(exang _|_ thalach | chol, fbs, age, restecg, heartdisease)
+(exang _|_ restecg | chol, fbs, age, thalach, heartdisease)
+(exang _|_ thalach, heartdisease, fbs | chol, sex, trestbps, age, restecg)
+(exang _|_ heartdisease, fbs, restecg | chol, sex, trestbps, age, thalach)
+(exang _|_ thalach, fbs, restecg | chol, sex, trestbps, age, heartdisease)
+(exang _|_ thalach | chol, sex, trestbps, restecg, heartdisease)
+(exang _|_ restecg | chol, sex, trestbps, thalach, heartdisease)
+(exang _|_ thalach | chol, sex, age, restecg, heartdisease)
+(exang _|_ restecg | chol, sex, age, thalach, heartdisease)
+(exang _|_ heartdisease, fbs | chol, trestbps, age, restecg, thalach)
+(exang _|_ thalach, fbs | chol, trestbps, age, restecg, heartdisease)
+(exang _|_ fbs, restecg | chol, trestbps, age, thalach, heartdisease)
+(exang _|_ thalach, heartdisease, chol | fbs, sex, trestbps, age, restecg)
+(exang _|_ heartdisease, restecg, chol | fbs, sex, trestbps, age, thalach)
+(exang _|_ thalach, restecg, chol | fbs, sex, trestbps, age, heartdisease)
+(exang _|_ heartdisease, chol | fbs, sex, trestbps, restecg, thalach)
+(exang _|_ thalach, chol | fbs, sex, trestbps, restecg, heartdisease)
+(exang _|_ restecg, chol | fbs, sex, trestbps, thalach, heartdisease)
+(exang _|_ thalach, chol | fbs, sex, age, restecg, heartdisease)
+(exang _|_ restecg, chol | fbs, sex, age, thalach, heartdisease)
+(exang _|_ chol | fbs, sex, restecg, thalach, heartdisease)
+(exang _|_ heartdisease, chol | fbs, trestbps, age, restecg, thalach)
+(exang _|_ thalach, chol | fbs, trestbps, age, restecg, heartdisease)
+(exang _|_ restecg, chol | fbs, trestbps, age, thalach, heartdisease)
+(exang _|_ chol | fbs, trestbps, restecg, thalach, heartdisease)
+(exang _|_ chol | fbs, age, restecg, thalach, heartdisease)
+(exang _|_ heartdisease, fbs, chol | sex, trestbps, age, restecg, thalach)
+(exang _|_ thalach, fbs, chol | sex, trestbps, age, restecg, heartdisease)
+(exang _|_ fbs, restecg, chol | sex, trestbps, age, thalach, heartdisease)
+(exang _|_ chol | sex, trestbps, restecg, thalach, heartdisease)
+(exang _|_ chol | sex, age, restecg, thalach, heartdisease)
+(exang _|_ fbs, chol | trestbps, age, restecg, thalach, heartdisease)
+(exang _|_ thalach, heartdisease | chol, fbs, sex, trestbps, age, restecg)
+(exang _|_ heartdisease, restecg | chol, fbs, sex, trestbps, age, thalach)
+(exang _|_ thalach, restecg | chol, fbs, sex, trestbps, age, heartdisease)
+(exang _|_ heartdisease | chol, fbs, sex, trestbps, restecg, thalach)
+(exang _|_ thalach | chol, fbs, sex, trestbps, restecg, heartdisease)
+(exang _|_ restecg | chol, fbs, sex, trestbps, thalach, heartdisease)
+(exang _|_ thalach | chol, fbs, sex, age, restecg, heartdisease)
+(exang _|_ restecg | chol, fbs, sex, age, thalach, heartdisease)
+(exang _|_ heartdisease | chol, fbs, trestbps, age, restecg, thalach)
+(exang _|_ thalach | chol, fbs, trestbps, age, restecg, heartdisease)
+(exang _|_ restecg | chol, fbs, trestbps, age, thalach, heartdisease)
+(exang _|_ heartdisease, fbs | chol, sex, trestbps, age, restecg, thalach)
+(exang _|_ thalach, fbs | chol, sex, trestbps, age, restecg, heartdisease)
+(exang _|_ fbs, restecg | chol, sex, trestbps, age, thalach, heartdisease)
+(exang _|_ fbs | chol, trestbps, age, restecg, thalach, heartdisease)
+(exang _|_ heartdisease, chol | fbs, sex, trestbps, age, restecg, thalach)
+(exang _|_ thalach, chol | fbs, sex, trestbps, age, restecg, heartdisease)
+(exang _|_ restecg, chol | fbs, sex, trestbps, age, thalach, heartdisease)
+(exang _|_ chol | fbs, sex, trestbps, restecg, thalach, heartdisease)
+(exang _|_ chol | fbs, sex, age, restecg, thalach, heartdisease)
+(exang _|_ chol | fbs, trestbps, age, restecg, thalach, heartdisease)
+(exang _|_ fbs, chol | sex, trestbps, age, restecg, thalach, heartdisease)
+(exang _|_ heartdisease | chol, fbs, sex, trestbps, age, restecg, thalach)
+(exang _|_ thalach | chol, fbs, sex, trestbps, age, restecg, heartdisease)
+(exang _|_ restecg | chol, fbs, sex, trestbps, age, thalach, heartdisease)
+(exang _|_ fbs | chol, sex, trestbps, age, restecg, thalach, heartdisease)
+(exang _|_ chol | fbs, sex, trestbps, age, restecg, thalach, heartdisease)
+(heartdisease _|_ age, exang, sex | trestbps, fbs)
+(heartdisease _|_ exang, sex | trestbps, age)
+(heartdisease _|_ age, exang, sex | trestbps, fbs, chol)
+(heartdisease _|_ exang, sex | trestbps, age, chol)
+(heartdisease _|_ age, sex | trestbps, exang, fbs)
+(heartdisease _|_ sex | trestbps, age, exang)
+(heartdisease _|_ age, exang | trestbps, fbs, sex)
+(heartdisease _|_ exang, sex | trestbps, age, fbs)
+(heartdisease _|_ age, exang, sex | trestbps, fbs, restecg)
+(heartdisease _|_ age, exang, sex | trestbps, thalach, fbs)
+(heartdisease _|_ exang | trestbps, age, sex)
+(heartdisease _|_ exang, sex | trestbps, age, restecg)
+(heartdisease _|_ exang, sex | trestbps, age, thalach)
+(heartdisease _|_ age, sex | trestbps, exang, fbs, chol)
+(heartdisease _|_ sex | trestbps, age, exang, chol)
+(heartdisease _|_ age, exang | trestbps, sex, fbs, chol)
+(heartdisease _|_ exang, sex | trestbps, age, fbs, chol)
+(heartdisease _|_ age, exang, sex | trestbps, fbs, restecg, chol)
+(heartdisease _|_ age, exang, sex | trestbps, thalach, fbs, chol)
+(heartdisease _|_ exang | trestbps, sex, age, chol)
+(heartdisease _|_ exang, sex | trestbps, age, restecg, chol)
+(heartdisease _|_ exang, sex | trestbps, age, thalach, chol)
+(heartdisease _|_ age | trestbps, exang, fbs, sex)
+(heartdisease _|_ sex | trestbps, age, exang, fbs)
+(heartdisease _|_ age, sex | trestbps, exang, fbs, restecg)
+(heartdisease _|_ age, sex | trestbps, exang, fbs, thalach)
+(heartdisease _|_ sex | trestbps, age, exang, restecg)
+(heartdisease _|_ sex | trestbps, age, exang, thalach)
+(heartdisease _|_ exang | trestbps, age, fbs, sex)
+(heartdisease _|_ age, exang | trestbps, fbs, restecg, sex)
+(heartdisease _|_ age, exang | trestbps, thalach, fbs, sex)
+(heartdisease _|_ exang, sex | trestbps, age, fbs, restecg)
+(heartdisease _|_ exang, sex | trestbps, age, thalach, fbs)
+(heartdisease _|_ age, exang, sex | trestbps, thalach, fbs, restecg)
+(heartdisease _|_ exang | trestbps, age, restecg, sex)
+(heartdisease _|_ exang | trestbps, age, thalach, sex)
+(heartdisease _|_ exang, sex | trestbps, age, thalach, restecg)
+(heartdisease _|_ age | chol, exang, fbs, sex, trestbps)
+(heartdisease _|_ sex | chol, exang, fbs, trestbps, age)
+(heartdisease _|_ age, sex | chol, exang, fbs, trestbps, restecg)
+(heartdisease _|_ age, sex | chol, exang, fbs, trestbps, thalach)
+(heartdisease _|_ sex | chol, exang, trestbps, age, restecg)
+(heartdisease _|_ sex | chol, exang, trestbps, age, thalach)
+(heartdisease _|_ exang | chol, fbs, sex, trestbps, age)
+(heartdisease _|_ age, exang | chol, fbs, sex, trestbps, restecg)
+(heartdisease _|_ age, exang | chol, fbs, sex, trestbps, thalach)
+(heartdisease _|_ exang, sex | chol, fbs, trestbps, age, restecg)
+(heartdisease _|_ exang, sex | chol, fbs, trestbps, age, thalach)
+(heartdisease _|_ age, exang, sex | chol, fbs, trestbps, restecg, thalach)
+(heartdisease _|_ exang | chol, sex, trestbps, age, restecg)
+(heartdisease _|_ exang | chol, sex, trestbps, age, thalach)
+(heartdisease _|_ exang, sex | chol, trestbps, age, restecg, thalach)
+(heartdisease _|_ age | exang, fbs, sex, trestbps, restecg)
+(heartdisease _|_ age | exang, fbs, sex, trestbps, thalach)
+(heartdisease _|_ sex | exang, fbs, trestbps, age, restecg)
+(heartdisease _|_ sex | exang, fbs, trestbps, age, thalach)
+(heartdisease _|_ age, sex | exang, fbs, trestbps, restecg, thalach)
+(heartdisease _|_ sex | exang, trestbps, age, restecg, thalach)
+(heartdisease _|_ exang | fbs, sex, trestbps, age, restecg)
+(heartdisease _|_ exang | fbs, sex, trestbps, age, thalach)
+(heartdisease _|_ age, exang | fbs, sex, trestbps, restecg, thalach)
+(heartdisease _|_ exang, sex | fbs, trestbps, age, restecg, thalach)
+(heartdisease _|_ exang | sex, trestbps, age, restecg, thalach)
+(heartdisease _|_ age | chol, exang, fbs, sex, trestbps, restecg)
+(heartdisease _|_ age | chol, exang, fbs, sex, trestbps, thalach)
+(heartdisease _|_ sex | chol, exang, fbs, trestbps, age, restecg)
+(heartdisease _|_ sex | chol, exang, fbs, trestbps, age, thalach)
+(heartdisease _|_ age, sex | chol, exang, fbs, trestbps, restecg, thalach)
+(heartdisease _|_ sex | chol, exang, trestbps, age, restecg, thalach)
+(heartdisease _|_ exang | chol, fbs, sex, trestbps, age, restecg)
+(heartdisease _|_ exang | chol, fbs, sex, trestbps, age, thalach)
+(heartdisease _|_ age, exang | chol, fbs, sex, trestbps, restecg, thalach)
+(heartdisease _|_ exang, sex | chol, fbs, trestbps, age, restecg, thalach)
+(heartdisease _|_ exang | chol, sex, trestbps, age, restecg, thalach)
+(heartdisease _|_ age | exang, fbs, sex, trestbps, restecg, thalach)
+(heartdisease _|_ sex | exang, fbs, trestbps, age, restecg, thalach)
+(heartdisease _|_ exang | fbs, sex, trestbps, age, restecg, thalach)
+(heartdisease _|_ age | chol, exang, fbs, sex, trestbps, restecg, thalach)
+(heartdisease _|_ sex | chol, exang, fbs, trestbps, age, restecg, thalach)
+(heartdisease _|_ exang | chol, fbs, sex, trestbps, age, restecg, thalach)
+(restecg _|_ trestbps, age, chol, thalach, exang, fbs, sex | heartdisease)
+(restecg _|_ trestbps, age, thalach, exang, fbs, sex | heartdisease, chol)
+(restecg _|_ trestbps, age, chol, thalach, fbs, sex | heartdisease, exang)
+(restecg _|_ age, exang, sex | trestbps, fbs)
+(restecg _|_ trestbps, age, chol, thalach, exang, sex | heartdisease, fbs)
+(restecg _|_ trestbps, age, chol, thalach, exang, fbs | heartdisease, sex)
+(restecg _|_ exang, sex | trestbps, age)
+(restecg _|_ age, chol, thalach, exang, fbs, sex | trestbps, heartdisease)
+(restecg _|_ trestbps, chol, thalach, exang, fbs, sex | age, heartdisease)
+(restecg _|_ trestbps, age, chol, exang, fbs, sex | thalach, heartdisease)
+(restecg _|_ trestbps, age, thalach, fbs, sex | heartdisease, exang, chol)
+(restecg _|_ age, exang, sex | trestbps, fbs, chol)
+(restecg _|_ trestbps, age, thalach, exang, sex | heartdisease, fbs, chol)
+(restecg _|_ trestbps, age, thalach, exang, fbs | sex, heartdisease, chol)
+(restecg _|_ exang, sex | trestbps, age, chol)
+(restecg _|_ age, thalach, exang, fbs, sex | trestbps, heartdisease, chol)
+(restecg _|_ trestbps, thalach, exang, fbs, sex | age, heartdisease, chol)
+(restecg _|_ trestbps, age, exang, fbs, sex | thalach, heartdisease, chol)
+(restecg _|_ age, sex | trestbps, exang, fbs)
+(restecg _|_ trestbps, age, chol, thalach, sex | heartdisease, exang, fbs)
+(restecg _|_ trestbps, age, chol, thalach, fbs | heartdisease, exang, sex)
+(restecg _|_ sex | trestbps, age, exang)
+(restecg _|_ age, chol, thalach, fbs, sex | trestbps, heartdisease, exang)
+(restecg _|_ trestbps, chol, thalach, fbs, sex | age, heartdisease, exang)
+(restecg _|_ trestbps, age, chol, fbs, sex | thalach, heartdisease, exang)
+(restecg _|_ age, exang | trestbps, fbs, sex)
+(restecg _|_ trestbps, age, chol, thalach, exang | heartdisease, fbs, sex)
+(restecg _|_ exang, sex | trestbps, age, fbs)
+(restecg _|_ age, exang, sex | trestbps, thalach, fbs)
+(restecg _|_ age, chol, thalach, exang, sex | trestbps, heartdisease, fbs)
+(restecg _|_ trestbps, chol, thalach, exang, sex | age, heartdisease, fbs)
+(restecg _|_ trestbps, age, chol, exang, sex | thalach, heartdisease, fbs)
+(restecg _|_ exang | trestbps, age, sex)
+(restecg _|_ age, chol, thalach, exang, fbs | trestbps, heartdisease, sex)
+(restecg _|_ trestbps, chol, thalach, exang, fbs | age, heartdisease, sex)
+(restecg _|_ trestbps, age, chol, exang, fbs | thalach, heartdisease, sex)
+(restecg _|_ exang, sex | trestbps, age, thalach)
+(restecg _|_ chol, thalach, exang, fbs, sex | trestbps, age, heartdisease)
+(restecg _|_ age, chol, exang, fbs, sex | trestbps, heartdisease, thalach)
+(restecg _|_ trestbps, chol, exang, fbs, sex | thalach, age, heartdisease)
+(restecg _|_ age, sex | trestbps, exang, fbs, chol)
+(restecg _|_ trestbps, age, thalach, sex | heartdisease, exang, fbs, chol)
+(restecg _|_ trestbps, age, thalach, fbs | sex, heartdisease, exang, chol)
+(restecg _|_ sex | trestbps, age, exang, chol)
+(restecg _|_ thalach, age, fbs, sex | trestbps, heartdisease, exang, chol)
+(restecg _|_ trestbps, thalach, fbs, sex | age, heartdisease, exang, chol)
+(restecg _|_ trestbps, age, fbs, sex | thalach, heartdisease, exang, chol)
+(restecg _|_ age, exang | trestbps, sex, fbs, chol)
+(restecg _|_ trestbps, age, exang, thalach | sex, heartdisease, fbs, chol)
+(restecg _|_ exang, sex | trestbps, age, fbs, chol)
+(restecg _|_ age, exang, sex | trestbps, thalach, fbs, chol)
+(restecg _|_ thalach, age, exang, sex | trestbps, heartdisease, fbs, chol)
+(restecg _|_ trestbps, thalach, exang, sex | age, heartdisease, fbs, chol)
+(restecg _|_ trestbps, age, exang, sex | thalach, heartdisease, fbs, chol)
+(restecg _|_ exang | trestbps, sex, age, chol)
+(restecg _|_ thalach, age, exang, fbs | trestbps, sex, heartdisease, chol)
+(restecg _|_ trestbps, exang, fbs, thalach | sex, heartdisease, age, chol)
+(restecg _|_ trestbps, age, exang, fbs | thalach, sex, heartdisease, chol)
+(restecg _|_ exang, sex | trestbps, age, thalach, chol)
+(restecg _|_ thalach, exang, fbs, sex | trestbps, age, heartdisease, chol)
+(restecg _|_ age, exang, fbs, sex | trestbps, heartdisease, thalach, chol)
+(restecg _|_ trestbps, exang, fbs, sex | thalach, age, heartdisease, chol)
+(restecg _|_ age | trestbps, exang, fbs, sex)
+(restecg _|_ trestbps, age, thalach, chol | heartdisease, exang, fbs, sex)
+(restecg _|_ sex | trestbps, age, exang, fbs)
+(restecg _|_ age, sex | trestbps, exang, fbs, thalach)
+(restecg _|_ thalach, age, chol, sex | trestbps, heartdisease, exang, fbs)
+(restecg _|_ trestbps, thalach, chol, sex | age, heartdisease, exang, fbs)
+(restecg _|_ trestbps, age, chol, sex | thalach, heartdisease, exang, fbs)
+(restecg _|_ thalach, age, fbs, chol | trestbps, heartdisease, exang, sex)
+(restecg _|_ trestbps, thalach, fbs, chol | age, heartdisease, exang, sex)
+(restecg _|_ trestbps, age, fbs, chol | thalach, heartdisease, exang, sex)
+(restecg _|_ sex | trestbps, age, exang, thalach)
+(restecg _|_ thalach, fbs, chol, sex | trestbps, age, heartdisease, exang)
+(restecg _|_ age, fbs, chol, sex | trestbps, heartdisease, exang, thalach)
+(restecg _|_ trestbps, fbs, chol, sex | thalach, age, heartdisease, exang)
+(restecg _|_ exang | trestbps, age, fbs, sex)
+(restecg _|_ age, exang | trestbps, thalach, fbs, sex)
+(restecg _|_ thalach, age, exang, chol | trestbps, heartdisease, fbs, sex)
+(restecg _|_ trestbps, thalach, exang, chol | age, heartdisease, fbs, sex)
+(restecg _|_ trestbps, age, exang, chol | thalach, heartdisease, fbs, sex)
+(restecg _|_ exang, sex | trestbps, age, thalach, fbs)
+(restecg _|_ thalach, exang, chol, sex | trestbps, age, heartdisease, fbs)
+(restecg _|_ age, exang, chol, sex | trestbps, heartdisease, thalach, fbs)
+(restecg _|_ trestbps, exang, chol, sex | thalach, age, heartdisease, fbs)
+(restecg _|_ exang | trestbps, age, thalach, sex)
+(restecg _|_ thalach, exang, fbs, chol | trestbps, age, heartdisease, sex)
+(restecg _|_ age, exang, fbs, chol | trestbps, heartdisease, thalach, sex)
+(restecg _|_ trestbps, exang, fbs, chol | thalach, age, heartdisease, sex)
+(restecg _|_ exang, fbs, chol, sex | trestbps, age, heartdisease, thalach)
+(restecg _|_ age | chol, exang, fbs, sex, trestbps)
+(restecg _|_ trestbps, age, thalach | chol, exang, fbs, sex, heartdisease)
+(restecg _|_ sex | chol, exang, fbs, trestbps, age)
+(restecg _|_ age, sex | chol, exang, fbs, trestbps, thalach)
+(restecg _|_ thalach, age, sex | chol, exang, fbs, trestbps, heartdisease)
+(restecg _|_ trestbps, thalach, sex | chol, exang, fbs, age, heartdisease)
+(restecg _|_ trestbps, age, sex | chol, exang, fbs, thalach, heartdisease)
+(restecg _|_ thalach, age, fbs | chol, exang, sex, trestbps, heartdisease)
+(restecg _|_ trestbps, thalach, fbs | chol, exang, sex, age, heartdisease)
+(restecg _|_ trestbps, age, fbs | chol, exang, sex, thalach, heartdisease)
+(restecg _|_ sex | chol, exang, trestbps, age, thalach)
+(restecg _|_ thalach, fbs, sex | chol, exang, trestbps, age, heartdisease)
+(restecg _|_ age, fbs, sex | chol, exang, trestbps, thalach, heartdisease)
+(restecg _|_ trestbps, fbs, sex | chol, exang, age, thalach, heartdisease)
+(restecg _|_ exang | chol, fbs, sex, trestbps, age)
+(restecg _|_ age, exang | chol, fbs, sex, trestbps, thalach)
+(restecg _|_ thalach, age, exang | chol, fbs, sex, trestbps, heartdisease)
+(restecg _|_ trestbps, exang, thalach | chol, fbs, sex, age, heartdisease)
+(restecg _|_ trestbps, age, exang | chol, fbs, sex, thalach, heartdisease)
+(restecg _|_ exang, sex | chol, fbs, trestbps, age, thalach)
+(restecg _|_ thalach, exang, sex | chol, fbs, trestbps, age, heartdisease)
+(restecg _|_ age, exang, sex | chol, fbs, trestbps, thalach, heartdisease)
+(restecg _|_ trestbps, exang, sex | chol, fbs, age, thalach, heartdisease)
+(restecg _|_ exang | chol, sex, trestbps, age, thalach)
+(restecg _|_ thalach, exang, fbs | chol, sex, trestbps, age, heartdisease)
+(restecg _|_ age, exang, fbs | chol, sex, trestbps, thalach, heartdisease)
+(restecg _|_ trestbps, exang, fbs | chol, sex, age, thalach, heartdisease)
+(restecg _|_ exang, fbs, sex | chol, trestbps, age, thalach, heartdisease)
+(restecg _|_ age | exang, fbs, sex, trestbps, thalach)
+(restecg _|_ thalach, age, chol | exang, fbs, sex, trestbps, heartdisease)
+(restecg _|_ trestbps, thalach, chol | exang, fbs, sex, age, heartdisease)
+(restecg _|_ trestbps, age, chol | exang, fbs, sex, thalach, heartdisease)
+(restecg _|_ sex | exang, fbs, trestbps, age, thalach)
+(restecg _|_ thalach, chol, sex | exang, fbs, trestbps, age, heartdisease)
+(restecg _|_ age, chol, sex | exang, fbs, trestbps, thalach, heartdisease)
+(restecg _|_ trestbps, chol, sex | exang, fbs, age, thalach, heartdisease)
+(restecg _|_ thalach, fbs, chol | exang, sex, trestbps, age, heartdisease)
+(restecg _|_ age, fbs, chol | exang, sex, trestbps, thalach, heartdisease)
+(restecg _|_ trestbps, fbs, chol | exang, sex, age, thalach, heartdisease)
+(restecg _|_ fbs, chol, sex | exang, trestbps, age, thalach, heartdisease)
+(restecg _|_ exang | fbs, sex, trestbps, age, thalach)
+(restecg _|_ thalach, exang, chol | fbs, sex, trestbps, age, heartdisease)
+(restecg _|_ age, exang, chol | fbs, sex, trestbps, thalach, heartdisease)
+(restecg _|_ trestbps, exang, chol | fbs, sex, age, thalach, heartdisease)
+(restecg _|_ exang, chol, sex | fbs, trestbps, age, thalach, heartdisease)
+(restecg _|_ exang, fbs, chol | sex, trestbps, age, thalach, heartdisease)
+(restecg _|_ age | chol, exang, fbs, sex, trestbps, thalach)
+(restecg _|_ thalach, age | chol, exang, fbs, sex, trestbps, heartdisease)
+(restecg _|_ trestbps, thalach | chol, exang, fbs, sex, age, heartdisease)
+(restecg _|_ trestbps, age | chol, exang, fbs, sex, thalach, heartdisease)
+(restecg _|_ sex | chol, exang, fbs, trestbps, age, thalach)
+(restecg _|_ thalach, sex | chol, exang, fbs, trestbps, age, heartdisease)
+(restecg _|_ age, sex | chol, exang, fbs, trestbps, thalach, heartdisease)
+(restecg _|_ trestbps, sex | chol, exang, fbs, age, thalach, heartdisease)
+(restecg _|_ thalach, fbs | chol, exang, sex, trestbps, age, heartdisease)
+(restecg _|_ age, fbs | chol, exang, sex, trestbps, thalach, heartdisease)
+(restecg _|_ trestbps, fbs | chol, exang, sex, age, thalach, heartdisease)
+(restecg _|_ fbs, sex | chol, exang, trestbps, age, thalach, heartdisease)
+(restecg _|_ exang | chol, fbs, sex, trestbps, age, thalach)
+(restecg _|_ thalach, exang | chol, fbs, sex, trestbps, age, heartdisease)
+(restecg _|_ age, exang | chol, fbs, sex, trestbps, thalach, heartdisease)
+(restecg _|_ trestbps, exang | chol, fbs, sex, age, thalach, heartdisease)
+(restecg _|_ exang, sex | chol, fbs, trestbps, age, thalach, heartdisease)
+(restecg _|_ exang, fbs | chol, sex, trestbps, age, thalach, heartdisease)
+(restecg _|_ thalach, chol | exang, fbs, sex, trestbps, age, heartdisease)
+(restecg _|_ age, chol | exang, fbs, sex, trestbps, thalach, heartdisease)
+(restecg _|_ trestbps, chol | exang, fbs, sex, age, thalach, heartdisease)
+(restecg _|_ chol, sex | exang, fbs, trestbps, age, thalach, heartdisease)
+(restecg _|_ fbs, chol | exang, sex, trestbps, age, thalach, heartdisease)
+(restecg _|_ exang, chol | fbs, sex, trestbps, age, thalach, heartdisease)
+(restecg _|_ thalach | chol, exang, fbs, sex, trestbps, age, heartdisease)
+(restecg _|_ age | chol, exang, fbs, sex, trestbps, thalach, heartdisease)
+(restecg _|_ trestbps | chol, exang, fbs, sex, age, thalach, heartdisease)
+(restecg _|_ sex | chol, exang, fbs, trestbps, age, thalach, heartdisease)
+(restecg _|_ fbs | chol, exang, sex, trestbps, age, thalach, heartdisease)
+(restecg _|_ exang | chol, fbs, sex, trestbps, age, thalach, heartdisease)
+(restecg _|_ chol | exang, fbs, sex, trestbps, age, thalach, heartdisease)
+(thalach _|_ trestbps, age, restecg, chol, exang, fbs, sex | heartdisease)
+(thalach _|_ trestbps, age, restecg, exang, fbs, sex | heartdisease, chol)
+(thalach _|_ trestbps, age, restecg, chol, fbs, sex | heartdisease, exang)
+(thalach _|_ age, exang, sex | trestbps, fbs)
+(thalach _|_ trestbps, age, restecg, chol, exang, sex | heartdisease, fbs)
+(thalach _|_ trestbps, age, restecg, chol, exang, fbs | heartdisease, sex)
+(thalach _|_ exang, sex | trestbps, age)
+(thalach _|_ age, restecg, chol, exang, fbs, sex | trestbps, heartdisease)
+(thalach _|_ trestbps, restecg, chol, exang, fbs, sex | age, heartdisease)
+(thalach _|_ trestbps, age, chol, exang, fbs, sex | heartdisease, restecg)
+(thalach _|_ trestbps, age, restecg, fbs, sex | heartdisease, exang, chol)
+(thalach _|_ age, exang, sex | trestbps, fbs, chol)
+(thalach _|_ trestbps, age, restecg, exang, sex | heartdisease, fbs, chol)
+(thalach _|_ trestbps, age, restecg, exang, fbs | sex, heartdisease, chol)
+(thalach _|_ exang, sex | trestbps, age, chol)
+(thalach _|_ age, restecg, exang, fbs, sex | trestbps, heartdisease, chol)
+(thalach _|_ trestbps, restecg, exang, fbs, sex | age, heartdisease, chol)
+(thalach _|_ trestbps, age, exang, fbs, sex | heartdisease, restecg, chol)
+(thalach _|_ age, sex | trestbps, exang, fbs)
+(thalach _|_ trestbps, age, restecg, chol, sex | heartdisease, exang, fbs)
+(thalach _|_ trestbps, age, restecg, chol, fbs | heartdisease, exang, sex)
+(thalach _|_ sex | trestbps, age, exang)
+(thalach _|_ age, restecg, chol, fbs, sex | trestbps, heartdisease, exang)
+(thalach _|_ trestbps, restecg, chol, fbs, sex | age, heartdisease, exang)
+(thalach _|_ trestbps, age, chol, fbs, sex | heartdisease, exang, restecg)
+(thalach _|_ age, exang | trestbps, fbs, sex)
+(thalach _|_ trestbps, age, restecg, chol, exang | heartdisease, fbs, sex)
+(thalach _|_ exang, sex | trestbps, age, fbs)
+(thalach _|_ age, exang, sex | trestbps, fbs, restecg)
+(thalach _|_ age, restecg, chol, exang, sex | trestbps, heartdisease, fbs)
+(thalach _|_ trestbps, restecg, chol, exang, sex | age, heartdisease, fbs)
+(thalach _|_ trestbps, age, chol, exang, sex | heartdisease, fbs, restecg)
+(thalach _|_ exang | trestbps, age, sex)
+(thalach _|_ age, restecg, chol, exang, fbs | trestbps, heartdisease, sex)
+(thalach _|_ trestbps, restecg, chol, exang, fbs | age, heartdisease, sex)
+(thalach _|_ trestbps, age, chol, exang, fbs | heartdisease, restecg, sex)
+(thalach _|_ exang, sex | trestbps, age, restecg)
+(thalach _|_ restecg, chol, exang, fbs, sex | trestbps, age, heartdisease)
+(thalach _|_ age, chol, exang, fbs, sex | trestbps, heartdisease, restecg)
+(thalach _|_ trestbps, chol, exang, fbs, sex | age, heartdisease, restecg)
+(thalach _|_ age, sex | trestbps, exang, fbs, chol)
+(thalach _|_ trestbps, age, restecg, sex | heartdisease, exang, fbs, chol)
+(thalach _|_ trestbps, age, fbs, restecg | sex, heartdisease, exang, chol)
+(thalach _|_ sex | trestbps, age, exang, chol)
+(thalach _|_ age, fbs, restecg, sex | trestbps, heartdisease, exang, chol)
+(thalach _|_ trestbps, fbs, restecg, sex | age, heartdisease, exang, chol)
+(thalach _|_ trestbps, age, fbs, sex | heartdisease, exang, restecg, chol)
+(thalach _|_ age, exang | trestbps, sex, fbs, chol)
+(thalach _|_ trestbps, age, exang, restecg | sex, heartdisease, fbs, chol)
+(thalach _|_ exang, sex | trestbps, age, fbs, chol)
+(thalach _|_ age, exang, sex | trestbps, fbs, restecg, chol)
+(thalach _|_ age, exang, restecg, sex | trestbps, heartdisease, fbs, chol)
+(thalach _|_ trestbps, exang, restecg, sex | age, heartdisease, fbs, chol)
+(thalach _|_ trestbps, age, exang, sex | heartdisease, fbs, restecg, chol)
+(thalach _|_ exang | trestbps, sex, age, chol)
+(thalach _|_ age, exang, fbs, restecg | trestbps, sex, heartdisease, chol)
+(thalach _|_ trestbps, exang, fbs, restecg | sex, heartdisease, age, chol)
+(thalach _|_ trestbps, age, exang, fbs | sex, heartdisease, restecg, chol)
+(thalach _|_ exang, sex | trestbps, age, restecg, chol)
+(thalach _|_ exang, fbs, restecg, sex | trestbps, age, heartdisease, chol)
+(thalach _|_ age, exang, fbs, sex | trestbps, heartdisease, restecg, chol)
+(thalach _|_ trestbps, exang, fbs, sex | age, heartdisease, restecg, chol)
+(thalach _|_ age | trestbps, exang, fbs, sex)
+(thalach _|_ trestbps, age, restecg, chol | heartdisease, exang, fbs, sex)
+(thalach _|_ sex | trestbps, age, exang, fbs)
+(thalach _|_ age, sex | trestbps, exang, fbs, restecg)
+(thalach _|_ age, chol, restecg, sex | trestbps, heartdisease, exang, fbs)
+(thalach _|_ trestbps, chol, restecg, sex | age, heartdisease, exang, fbs)
+(thalach _|_ trestbps, age, chol, sex | heartdisease, exang, fbs, restecg)
+(thalach _|_ age, fbs, restecg, chol | trestbps, heartdisease, exang, sex)
+(thalach _|_ trestbps, fbs, restecg, chol | age, heartdisease, exang, sex)
+(thalach _|_ trestbps, age, fbs, chol | heartdisease, exang, restecg, sex)
+(thalach _|_ sex | trestbps, age, exang, restecg)
+(thalach _|_ chol, fbs, restecg, sex | trestbps, age, heartdisease, exang)
+(thalach _|_ age, fbs, chol, sex | trestbps, heartdisease, exang, restecg)
+(thalach _|_ trestbps, fbs, chol, sex | age, heartdisease, exang, restecg)
+(thalach _|_ exang | trestbps, age, fbs, sex)
+(thalach _|_ age, exang | trestbps, fbs, restecg, sex)
+(thalach _|_ age, exang, restecg, chol | trestbps, heartdisease, fbs, sex)
+(thalach _|_ trestbps, exang, restecg, chol | age, heartdisease, fbs, sex)
+(thalach _|_ trestbps, age, exang, chol | heartdisease, fbs, restecg, sex)
+(thalach _|_ exang, sex | trestbps, age, fbs, restecg)
+(thalach _|_ exang, chol, restecg, sex | trestbps, age, heartdisease, fbs)
+(thalach _|_ age, exang, chol, sex | trestbps, heartdisease, fbs, restecg)
+(thalach _|_ trestbps, exang, chol, sex | age, heartdisease, fbs, restecg)
+(thalach _|_ exang | trestbps, age, restecg, sex)
+(thalach _|_ exang, fbs, restecg, chol | trestbps, age, heartdisease, sex)
+(thalach _|_ age, exang, fbs, chol | trestbps, heartdisease, restecg, sex)
+(thalach _|_ trestbps, exang, fbs, chol | age, heartdisease, restecg, sex)
+(thalach _|_ exang, fbs, chol, sex | trestbps, age, heartdisease, restecg)
+(thalach _|_ age | chol, exang, fbs, sex, trestbps)
+(thalach _|_ trestbps, age, restecg | chol, exang, fbs, sex, heartdisease)
+(thalach _|_ sex | chol, exang, fbs, trestbps, age)
+(thalach _|_ age, sex | chol, exang, fbs, trestbps, restecg)
+(thalach _|_ age, restecg, sex | chol, exang, fbs, trestbps, heartdisease)
+(thalach _|_ trestbps, restecg, sex | chol, exang, fbs, age, heartdisease)
+(thalach _|_ trestbps, age, sex | chol, exang, fbs, restecg, heartdisease)
+(thalach _|_ age, fbs, restecg | chol, exang, sex, trestbps, heartdisease)
+(thalach _|_ trestbps, fbs, restecg | chol, exang, sex, age, heartdisease)
+(thalach _|_ trestbps, age, fbs | chol, exang, sex, restecg, heartdisease)
+(thalach _|_ sex | chol, exang, trestbps, age, restecg)
+(thalach _|_ fbs, restecg, sex | chol, exang, trestbps, age, heartdisease)
+(thalach _|_ age, fbs, sex | chol, exang, trestbps, restecg, heartdisease)
+(thalach _|_ trestbps, fbs, sex | chol, exang, age, restecg, heartdisease)
+(thalach _|_ exang | chol, fbs, sex, trestbps, age)
+(thalach _|_ age, exang | chol, fbs, sex, trestbps, restecg)
+(thalach _|_ age, exang, restecg | chol, fbs, sex, trestbps, heartdisease)
+(thalach _|_ trestbps, exang, restecg | chol, fbs, sex, age, heartdisease)
+(thalach _|_ trestbps, age, exang | chol, fbs, sex, restecg, heartdisease)
+(thalach _|_ exang, sex | chol, fbs, trestbps, age, restecg)
+(thalach _|_ exang, restecg, sex | chol, fbs, trestbps, age, heartdisease)
+(thalach _|_ age, exang, sex | chol, fbs, trestbps, restecg, heartdisease)
+(thalach _|_ trestbps, exang, sex | chol, fbs, age, restecg, heartdisease)
+(thalach _|_ exang | chol, sex, trestbps, age, restecg)
+(thalach _|_ exang, fbs, restecg | chol, sex, trestbps, age, heartdisease)
+(thalach _|_ age, exang, fbs | chol, sex, trestbps, restecg, heartdisease)
+(thalach _|_ trestbps, exang, fbs | chol, sex, age, restecg, heartdisease)
+(thalach _|_ exang, fbs, sex | chol, trestbps, age, restecg, heartdisease)
+(thalach _|_ age | exang, fbs, sex, trestbps, restecg)
+(thalach _|_ age, restecg, chol | exang, fbs, sex, trestbps, heartdisease)
+(thalach _|_ trestbps, restecg, chol | exang, fbs, sex, age, heartdisease)
+(thalach _|_ trestbps, age, chol | exang, fbs, sex, restecg, heartdisease)
+(thalach _|_ sex | exang, fbs, trestbps, age, restecg)
+(thalach _|_ chol, restecg, sex | exang, fbs, trestbps, age, heartdisease)
+(thalach _|_ age, chol, sex | exang, fbs, trestbps, restecg, heartdisease)
+(thalach _|_ trestbps, chol, sex | exang, fbs, age, restecg, heartdisease)
+(thalach _|_ fbs, restecg, chol | exang, sex, trestbps, age, heartdisease)
+(thalach _|_ age, fbs, chol | exang, sex, trestbps, restecg, heartdisease)
+(thalach _|_ trestbps, fbs, chol | exang, sex, age, restecg, heartdisease)
+(thalach _|_ fbs, chol, sex | exang, trestbps, age, restecg, heartdisease)
+(thalach _|_ exang | fbs, sex, trestbps, age, restecg)
+(thalach _|_ exang, restecg, chol | fbs, sex, trestbps, age, heartdisease)
+(thalach _|_ age, exang, chol | fbs, sex, trestbps, restecg, heartdisease)
+(thalach _|_ trestbps, exang, chol | fbs, sex, age, restecg, heartdisease)
+(thalach _|_ exang, chol, sex | fbs, trestbps, age, restecg, heartdisease)
+(thalach _|_ exang, fbs, chol | sex, trestbps, age, restecg, heartdisease)
+(thalach _|_ age | chol, exang, fbs, sex, trestbps, restecg)
+(thalach _|_ age, restecg | chol, exang, fbs, sex, trestbps, heartdisease)
+(thalach _|_ trestbps, restecg | chol, exang, fbs, sex, age, heartdisease)
+(thalach _|_ trestbps, age | chol, exang, fbs, sex, restecg, heartdisease)
+(thalach _|_ sex | chol, exang, fbs, trestbps, age, restecg)
+(thalach _|_ restecg, sex | chol, exang, fbs, trestbps, age, heartdisease)
+(thalach _|_ age, sex | chol, exang, fbs, trestbps, restecg, heartdisease)
+(thalach _|_ trestbps, sex | chol, exang, fbs, age, restecg, heartdisease)
+(thalach _|_ fbs, restecg | chol, exang, sex, trestbps, age, heartdisease)
+(thalach _|_ age, fbs | chol, exang, sex, trestbps, restecg, heartdisease)
+(thalach _|_ trestbps, fbs | chol, exang, sex, age, restecg, heartdisease)
+(thalach _|_ fbs, sex | chol, exang, trestbps, age, restecg, heartdisease)
+(thalach _|_ exang | chol, fbs, sex, trestbps, age, restecg)
+(thalach _|_ exang, restecg | chol, fbs, sex, trestbps, age, heartdisease)
+(thalach _|_ age, exang | chol, fbs, sex, trestbps, restecg, heartdisease)
+(thalach _|_ trestbps, exang | chol, fbs, sex, age, restecg, heartdisease)
+(thalach _|_ exang, sex | chol, fbs, trestbps, age, restecg, heartdisease)
+(thalach _|_ exang, fbs | chol, sex, trestbps, age, restecg, heartdisease)
+(thalach _|_ restecg, chol | exang, fbs, sex, trestbps, age, heartdisease)
+(thalach _|_ age, chol | exang, fbs, sex, trestbps, restecg, heartdisease)
+(thalach _|_ trestbps, chol | exang, fbs, sex, age, restecg, heartdisease)
+(thalach _|_ chol, sex | exang, fbs, trestbps, age, restecg, heartdisease)
+(thalach _|_ fbs, chol | exang, sex, trestbps, age, restecg, heartdisease)
+(thalach _|_ exang, chol | fbs, sex, trestbps, age, restecg, heartdisease)
+(thalach _|_ restecg | chol, exang, fbs, sex, trestbps, age, heartdisease)
+(thalach _|_ age | chol, exang, fbs, sex, trestbps, restecg, heartdisease)
+(thalach _|_ trestbps | chol, exang, fbs, sex, age, restecg, heartdisease)
+(thalach _|_ sex | chol, exang, fbs, trestbps, age, restecg, heartdisease)
+(thalach _|_ fbs | chol, exang, sex, trestbps, age, restecg, heartdisease)
+(thalach _|_ exang | chol, fbs, sex, trestbps, age, restecg, heartdisease)
+(thalach _|_ chol | exang, fbs, sex, trestbps, age, restecg, heartdisease)
+(chol _|_ trestbps, age, restecg, thalach, exang, fbs, sex | heartdisease)
+(chol _|_ trestbps, age, restecg, thalach, fbs, sex | heartdisease, exang)
+(chol _|_ age, exang, sex | trestbps, fbs)
+(chol _|_ trestbps, age, restecg, thalach, exang, sex | heartdisease, fbs)
+(chol _|_ trestbps, age, restecg, thalach, exang, fbs | heartdisease, sex)
+(chol _|_ exang, sex | trestbps, age)
+(chol _|_ age, restecg, thalach, exang, fbs, sex | trestbps, heartdisease)
+(chol _|_ trestbps, restecg, thalach, exang, fbs, sex | age, heartdisease)
+(chol _|_ trestbps, age, thalach, exang, fbs, sex | heartdisease, restecg)
+(chol _|_ trestbps, age, restecg, exang, fbs, sex | thalach, heartdisease)
+(chol _|_ age, sex | trestbps, exang, fbs)
+(chol _|_ trestbps, age, restecg, thalach, sex | heartdisease, exang, fbs)
+(chol _|_ trestbps, age, restecg, thalach, fbs | heartdisease, exang, sex)
+(chol _|_ sex | trestbps, age, exang)
+(chol _|_ age, restecg, thalach, fbs, sex | trestbps, heartdisease, exang)
+(chol _|_ trestbps, restecg, thalach, fbs, sex | age, heartdisease, exang)
+(chol _|_ trestbps, age, thalach, fbs, sex | heartdisease, exang, restecg)
+(chol _|_ trestbps, age, restecg, fbs, sex | thalach, heartdisease, exang)
+(chol _|_ age, exang | trestbps, fbs, sex)
+(chol _|_ trestbps, age, restecg, thalach, exang | heartdisease, fbs, sex)
+(chol _|_ exang, sex | trestbps, age, fbs)
+(chol _|_ age, exang, sex | trestbps, fbs, restecg)
+(chol _|_ age, exang, sex | trestbps, thalach, fbs)
+(chol _|_ age, restecg, thalach, exang, sex | trestbps, heartdisease, fbs)
+(chol _|_ trestbps, restecg, thalach, exang, sex | age, heartdisease, fbs)
+(chol _|_ trestbps, age, thalach, exang, sex | heartdisease, fbs, restecg)
+(chol _|_ trestbps, age, restecg, exang, sex | thalach, heartdisease, fbs)
+(chol _|_ exang | trestbps, age, sex)
+(chol _|_ age, restecg, thalach, exang, fbs | trestbps, heartdisease, sex)
+(chol _|_ trestbps, restecg, thalach, exang, fbs | age, heartdisease, sex)
+(chol _|_ trestbps, age, thalach, exang, fbs | heartdisease, restecg, sex)
+(chol _|_ trestbps, age, restecg, exang, fbs | thalach, heartdisease, sex)
+(chol _|_ exang, sex | trestbps, age, restecg)
+(chol _|_ exang, sex | trestbps, age, thalach)
+(chol _|_ restecg, thalach, exang, fbs, sex | trestbps, age, heartdisease)
+(chol _|_ age, thalach, exang, fbs, sex | trestbps, heartdisease, restecg)
+(chol _|_ age, restecg, exang, fbs, sex | trestbps, heartdisease, thalach)
+(chol _|_ trestbps, thalach, exang, fbs, sex | age, heartdisease, restecg)
+(chol _|_ trestbps, restecg, exang, fbs, sex | thalach, age, heartdisease)
+(chol _|_ trestbps, age, exang, fbs, sex | thalach, heartdisease, restecg)
+(chol _|_ age | trestbps, exang, fbs, sex)
+(chol _|_ trestbps, age, thalach, restecg | heartdisease, exang, fbs, sex)
+(chol _|_ sex | trestbps, age, exang, fbs)
+(chol _|_ age, sex | trestbps, exang, fbs, restecg)
+(chol _|_ age, sex | trestbps, exang, fbs, thalach)
+(chol _|_ thalach, age, restecg, sex | trestbps, heartdisease, exang, fbs)
+(chol _|_ trestbps, thalach, restecg, sex | age, heartdisease, exang, fbs)
+(chol _|_ trestbps, age, thalach, sex | heartdisease, exang, fbs, restecg)
+(chol _|_ trestbps, age, restecg, sex | thalach, heartdisease, exang, fbs)
+(chol _|_ thalach, age, fbs, restecg | trestbps, heartdisease, exang, sex)
+(chol _|_ trestbps, thalach, fbs, restecg | age, heartdisease, exang, sex)
+(chol _|_ trestbps, age, thalach, fbs | heartdisease, exang, restecg, sex)
+(chol _|_ trestbps, age, fbs, restecg | thalach, heartdisease, exang, sex)
+(chol _|_ sex | trestbps, age, exang, restecg)
+(chol _|_ sex | trestbps, age, exang, thalach)
+(chol _|_ thalach, fbs, restecg, sex | trestbps, age, heartdisease, exang)
+(chol _|_ thalach, age, fbs, sex | trestbps, heartdisease, exang, restecg)
+(chol _|_ age, fbs, restecg, sex | trestbps, heartdisease, exang, thalach)
+(chol _|_ trestbps, thalach, fbs, sex | age, heartdisease, exang, restecg)
+(chol _|_ trestbps, fbs, restecg, sex | thalach, age, heartdisease, exang)
+(chol _|_ trestbps, age, fbs, sex | thalach, heartdisease, exang, restecg)
+(chol _|_ exang | trestbps, age, fbs, sex)
+(chol _|_ age, exang | trestbps, fbs, restecg, sex)
+(chol _|_ age, exang | trestbps, thalach, fbs, sex)
+(chol _|_ thalach, age, exang, restecg | trestbps, heartdisease, fbs, sex)
+(chol _|_ trestbps, exang, restecg, thalach | age, heartdisease, fbs, sex)
+(chol _|_ trestbps, age, exang, thalach | heartdisease, fbs, restecg, sex)
+(chol _|_ trestbps, age, exang, restecg | thalach, heartdisease, fbs, sex)
+(chol _|_ exang, sex | trestbps, age, fbs, restecg)
+(chol _|_ exang, sex | trestbps, age, thalach, fbs)
+(chol _|_ thalach, exang, restecg, sex | trestbps, age, heartdisease, fbs)
+(chol _|_ age, exang, sex | trestbps, thalach, fbs, restecg)
+(chol _|_ thalach, age, exang, sex | trestbps, heartdisease, fbs, restecg)
+(chol _|_ age, exang, restecg, sex | trestbps, heartdisease, thalach, fbs)
+(chol _|_ trestbps, thalach, exang, sex | age, heartdisease, fbs, restecg)
+(chol _|_ trestbps, exang, restecg, sex | thalach, age, heartdisease, fbs)
+(chol _|_ trestbps, age, exang, sex | thalach, heartdisease, fbs, restecg)
+(chol _|_ exang | trestbps, age, restecg, sex)
+(chol _|_ exang | trestbps, age, thalach, sex)
+(chol _|_ thalach, exang, fbs, restecg | trestbps, age, heartdisease, sex)
+(chol _|_ thalach, age, exang, fbs | trestbps, heartdisease, restecg, sex)
+(chol _|_ age, exang, fbs, restecg | trestbps, heartdisease, thalach, sex)
+(chol _|_ trestbps, exang, fbs, thalach | age, heartdisease, restecg, sex)
+(chol _|_ trestbps, exang, fbs, restecg | thalach, age, heartdisease, sex)
+(chol _|_ trestbps, age, exang, fbs | thalach, heartdisease, restecg, sex)
+(chol _|_ exang, sex | trestbps, age, thalach, restecg)
+(chol _|_ thalach, exang, fbs, sex | trestbps, age, heartdisease, restecg)
+(chol _|_ exang, fbs, restecg, sex | trestbps, age, heartdisease, thalach)
+(chol _|_ age, exang, fbs, sex | trestbps, heartdisease, thalach, restecg)
+(chol _|_ trestbps, exang, fbs, sex | thalach, age, heartdisease, restecg)
+(chol _|_ age | exang, fbs, sex, trestbps, restecg)
+(chol _|_ age | exang, fbs, sex, trestbps, thalach)
+(chol _|_ thalach, age, restecg | exang, fbs, sex, trestbps, heartdisease)
+(chol _|_ trestbps, thalach, restecg | exang, fbs, sex, age, heartdisease)
+(chol _|_ trestbps, age, thalach | exang, fbs, sex, restecg, heartdisease)
+(chol _|_ trestbps, age, restecg | exang, fbs, sex, thalach, heartdisease)
+(chol _|_ sex | exang, fbs, trestbps, age, restecg)
+(chol _|_ sex | exang, fbs, trestbps, age, thalach)
+(chol _|_ thalach, restecg, sex | exang, fbs, trestbps, age, heartdisease)
+(chol _|_ age, sex | exang, fbs, trestbps, restecg, thalach)
+(chol _|_ thalach, age, sex | exang, fbs, trestbps, restecg, heartdisease)
+(chol _|_ age, restecg, sex | exang, fbs, trestbps, thalach, heartdisease)
+(chol _|_ trestbps, thalach, sex | exang, fbs, age, restecg, heartdisease)
+(chol _|_ trestbps, restecg, sex | exang, fbs, age, thalach, heartdisease)
+(chol _|_ trestbps, age, sex | exang, fbs, restecg, thalach, heartdisease)
+(chol _|_ thalach, fbs, restecg | exang, sex, trestbps, age, heartdisease)
+(chol _|_ thalach, age, fbs | exang, sex, trestbps, restecg, heartdisease)
+(chol _|_ age, fbs, restecg | exang, sex, trestbps, thalach, heartdisease)
+(chol _|_ trestbps, thalach, fbs | exang, sex, age, restecg, heartdisease)
+(chol _|_ trestbps, fbs, restecg | exang, sex, age, thalach, heartdisease)
+(chol _|_ trestbps, age, fbs | exang, sex, restecg, thalach, heartdisease)
+(chol _|_ sex | exang, trestbps, age, restecg, thalach)
+(chol _|_ thalach, fbs, sex | exang, trestbps, age, restecg, heartdisease)
+(chol _|_ fbs, restecg, sex | exang, trestbps, age, thalach, heartdisease)
+(chol _|_ age, fbs, sex | exang, trestbps, restecg, thalach, heartdisease)
+(chol _|_ trestbps, fbs, sex | exang, age, restecg, thalach, heartdisease)
+(chol _|_ exang | fbs, sex, trestbps, age, restecg)
+(chol _|_ exang | fbs, sex, trestbps, age, thalach)
+(chol _|_ thalach, exang, restecg | fbs, sex, trestbps, age, heartdisease)
+(chol _|_ age, exang | fbs, sex, trestbps, restecg, thalach)
+(chol _|_ thalach, age, exang | fbs, sex, trestbps, restecg, heartdisease)
+(chol _|_ age, exang, restecg | fbs, sex, trestbps, thalach, heartdisease)
+(chol _|_ trestbps, exang, thalach | fbs, sex, age, restecg, heartdisease)
+(chol _|_ trestbps, exang, restecg | fbs, sex, age, thalach, heartdisease)
+(chol _|_ trestbps, age, exang | fbs, sex, restecg, thalach, heartdisease)
+(chol _|_ exang, sex | fbs, trestbps, age, restecg, thalach)
+(chol _|_ thalach, exang, sex | fbs, trestbps, age, restecg, heartdisease)
+(chol _|_ exang, restecg, sex | fbs, trestbps, age, thalach, heartdisease)
+(chol _|_ age, exang, sex | fbs, trestbps, restecg, thalach, heartdisease)
+(chol _|_ trestbps, exang, sex | fbs, age, restecg, thalach, heartdisease)
+(chol _|_ exang | sex, trestbps, age, restecg, thalach)
+(chol _|_ thalach, exang, fbs | sex, trestbps, age, restecg, heartdisease)
+(chol _|_ exang, fbs, restecg | sex, trestbps, age, thalach, heartdisease)
+(chol _|_ age, exang, fbs | sex, trestbps, restecg, thalach, heartdisease)
+(chol _|_ trestbps, exang, fbs | sex, age, restecg, thalach, heartdisease)
+(chol _|_ exang, fbs, sex | trestbps, age, restecg, thalach, heartdisease)
+(chol _|_ thalach, restecg | exang, fbs, sex, trestbps, age, heartdisease)
+(chol _|_ age | exang, fbs, sex, trestbps, restecg, thalach)
+(chol _|_ thalach, age | exang, fbs, sex, trestbps, restecg, heartdisease)
+(chol _|_ age, restecg | exang, fbs, sex, trestbps, thalach, heartdisease)
+(chol _|_ trestbps, thalach | exang, fbs, sex, age, restecg, heartdisease)
+(chol _|_ trestbps, restecg | exang, fbs, sex, age, thalach, heartdisease)
+(chol _|_ trestbps, age | exang, fbs, sex, restecg, thalach, heartdisease)
+(chol _|_ sex | exang, fbs, trestbps, age, restecg, thalach)
+(chol _|_ thalach, sex | exang, fbs, trestbps, age, restecg, heartdisease)
+(chol _|_ restecg, sex | exang, fbs, trestbps, age, thalach, heartdisease)
+(chol _|_ age, sex | exang, fbs, trestbps, restecg, thalach, heartdisease)
+(chol _|_ trestbps, sex | exang, fbs, age, restecg, thalach, heartdisease)
+(chol _|_ thalach, fbs | exang, sex, trestbps, age, restecg, heartdisease)
+(chol _|_ fbs, restecg | exang, sex, trestbps, age, thalach, heartdisease)
+(chol _|_ age, fbs | exang, sex, trestbps, restecg, thalach, heartdisease)
+(chol _|_ trestbps, fbs | exang, sex, age, restecg, thalach, heartdisease)
+(chol _|_ fbs, sex | exang, trestbps, age, restecg, thalach, heartdisease)
+(chol _|_ exang | fbs, sex, trestbps, age, restecg, thalach)
+(chol _|_ thalach, exang | fbs, sex, trestbps, age, restecg, heartdisease)
+(chol _|_ exang, restecg | fbs, sex, trestbps, age, thalach, heartdisease)
+(chol _|_ age, exang | fbs, sex, trestbps, restecg, thalach, heartdisease)
+(chol _|_ trestbps, exang | fbs, sex, age, restecg, thalach, heartdisease)
+(chol _|_ exang, sex | fbs, trestbps, age, restecg, thalach, heartdisease)
+(chol _|_ exang, fbs | sex, trestbps, age, restecg, thalach, heartdisease)
+(chol _|_ thalach | exang, fbs, sex, trestbps, age, restecg, heartdisease)
+(chol _|_ restecg | exang, fbs, sex, trestbps, age, thalach, heartdisease)
+(chol _|_ age | exang, fbs, sex, trestbps, restecg, thalach, heartdisease)
+(chol _|_ trestbps | exang, fbs, sex, age, restecg, thalach, heartdisease)
+(chol _|_ sex | exang, fbs, trestbps, age, restecg, thalach, heartdisease)
+(chol _|_ fbs | exang, sex, trestbps, age, restecg, thalach, heartdisease)
+(chol _|_ exang | fbs, sex, trestbps, age, restecg, thalach, heartdisease)
